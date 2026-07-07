@@ -1,0 +1,74 @@
+{
+  "id": "terminal-console",
+  "name": "Terminal Console",
+  "mode": "dark",
+  "version": "1.0.0",
+  "author": "Built-in",
+  "palette": {
+    "background": {
+      "default": "#0D141D",
+      "paper": "#151C25",
+      "elevated": "#192029"
+    },
+    "text": {
+      "primary": "#DCE3F0",
+      "secondary": "#BCCABB",
+      "muted": "#869486",
+      "dim": "#59645C"
+    },
+    "accent": "#4ADE80",
+    "border": "#2D3A32",
+    "divider": "#223027"
+  },
+  "status": {
+    "running": "#4ADE80",
+    "idle": "#9CA3AF",
+    "waiting": "#FBBF24",
+    "attention": "#FBBF24",
+    "error": "#EF4444"
+  },
+  "typography": {
+    "fontUi": "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    "fontMono": "JetBrains Mono, SFMono-Regular, Menlo, Consolas, monospace",
+    "headingWeight": 700,
+    "bodyWeight": 500
+  },
+  "radius": {
+    "sm": 4,
+    "md": 6,
+    "lg": 8,
+    "xl": 12
+  },
+  "spacing": {
+    "density": "compact",
+    "base": 4
+  },
+  "effects": {
+    "shadowStrength": "subtle",
+    "glowStrength": "subtle",
+    "glassBlur": 12,
+    "backgroundNoise": true
+  },
+  "components": {
+    "card": {
+      "borderWidth": 1,
+      "surfaceOpacity": 0.94
+    },
+    "badge": {
+      "variant": "soft",
+      "uppercase": true
+    }
+  },
+  "progress": {
+    "height": 6,
+    "radius": 999
+  },
+  "agent": {
+    "activeRail": true,
+    "promptMarker": ">"
+  },
+  "appChrome": {
+    "background": "#111820",
+    "trafficLights": true
+  }
+}

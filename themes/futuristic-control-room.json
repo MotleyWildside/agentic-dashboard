@@ -1,0 +1,23 @@
+{
+  "id": "futuristic-control-room",
+  "name": "Futuristic Control Room",
+  "mode": "dark",
+  "version": "1.0.0",
+  "author": "Built-in",
+  "palette": {
+    "background": { "default": "#071018", "paper": "#0D1B26", "elevated": "#122635" },
+    "text": { "primary": "#EAF7FF", "secondary": "#A9C7D8", "muted": "#6E8C9D", "dim": "#496270" },
+    "accent": "#38BDF8",
+    "border": "#1F3D4E",
+    "divider": "#18313F"
+  },
+  "status": { "running": "#38BDF8", "idle": "#8AA2AF", "waiting": "#FBBF24", "attention": "#FBBF24", "error": "#F87171" },
+  "typography": { "fontUi": "Inter, system-ui, sans-serif", "fontMono": "JetBrains Mono, SFMono-Regular, monospace", "headingWeight": 700, "bodyWeight": 500 },
+  "radius": { "sm": 6, "md": 10, "lg": 14, "xl": 18 },
+  "spacing": { "density": "compact", "base": 8 },
+  "effects": { "shadowStrength": "medium", "glowStrength": "medium", "glassBlur": 18, "backgroundNoise": false },
+  "components": { "card": { "borderWidth": 1, "surfaceOpacity": 0.86 }, "badge": { "variant": "soft", "uppercase": true } },
+  "progress": { "height": 6, "radius": 999 },
+  "agent": { "activeRail": true, "promptMarker": ">" },
+  "appChrome": { "background": "#0A1721", "trafficLights": true }
+}

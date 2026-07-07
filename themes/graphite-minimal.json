@@ -1,0 +1,23 @@
+{
+  "id": "graphite-minimal",
+  "name": "Graphite Minimal",
+  "mode": "dark",
+  "version": "1.0.0",
+  "author": "Built-in",
+  "palette": {
+    "background": { "default": "#111113", "paper": "#1A1A1D", "elevated": "#222226" },
+    "text": { "primary": "#F4F4F5", "secondary": "#B8B8BF", "muted": "#81818A", "dim": "#5E5E66" },
+    "accent": "#E5E7EB",
+    "border": "#303036",
+    "divider": "#26262B"
+  },
+  "status": { "running": "#E5E7EB", "idle": "#8B8B94", "waiting": "#F59E0B", "attention": "#F59E0B", "error": "#EF4444" },
+  "typography": { "fontUi": "Inter, system-ui, sans-serif", "fontMono": "SFMono-Regular, Menlo, Consolas, monospace", "headingWeight": 700, "bodyWeight": 500 },
+  "radius": { "sm": 5, "md": 7, "lg": 8, "xl": 12 },
+  "spacing": { "density": "compact", "base": 4 },
+  "effects": { "shadowStrength": "none", "glowStrength": "none", "glassBlur": 0, "backgroundNoise": false },
+  "components": { "card": { "borderWidth": 1, "surfaceOpacity": 1 }, "badge": { "variant": "soft", "uppercase": true } },
+  "progress": { "height": 6, "radius": 999 },
+  "agent": { "activeRail": true, "promptMarker": ">" },
+  "appChrome": { "background": "#17171A", "trafficLights": true }
+}

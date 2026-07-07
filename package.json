@@ -1,0 +1,85 @@
+{
+  "name": "agentic-dashboard",
+  "version": "0.1.0",
+  "description": "Local-first dashboard for monitoring Claude Code and OpenAI Codex agent sessions",
+  "type": "module",
+  "private": true,
+  "main": "electron/main.cjs",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "dev": "FREE_PORT=1 PORT=8765 node --watch server/index.js & SERVER=$!; trap 'kill $SERVER 2>/dev/null' EXIT INT TERM; vite",
+    "dev:web": "vite",
+    "server": "FREE_PORT=1 node --watch server/index.js",
+    "start": "node server/index.js",
+    "scan": "node scripts/scan.js",
+    "build": "vite build",
+    "electron": "node electron/launch.cjs",
+    "app": "node electron/launch.cjs",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist": "electron-builder -mw"
+  },
+  "build": {
+    "appId": "com.wildside.agentic-dashboard",
+    "productName": "Agentic Dashboard",
+    "asar": true,
+    "directories": {
+      "output": "dist-app"
+    },
+    "files": [
+      "electron/**/*",
+      "server/**/*",
+      "public/**/*",
+      "themes/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/inter": "^5.2.8",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
+    "@vitejs/plugin-react": "^6.0.3",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-grid-layout": "^2.2.3",
+    "vite": "^8.1.3"
+  }
+}

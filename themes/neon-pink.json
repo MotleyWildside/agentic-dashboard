@@ -1,0 +1,23 @@
+{
+  "id": "neon-pink",
+  "name": "Neon Pink",
+  "mode": "dark",
+  "version": "1.0.0",
+  "author": "Built-in",
+  "palette": {
+    "background": { "default": "#120B14", "paper": "#1D1221", "elevated": "#28182E" },
+    "text": { "primary": "#FFF4FC", "secondary": "#D9BED6", "muted": "#A982A3", "dim": "#77576F" },
+    "accent": "#FF4FD8",
+    "border": "#3D2844",
+    "divider": "#301D36"
+  },
+  "status": { "running": "#FF4FD8", "idle": "#9C8AA0", "waiting": "#FFC857", "attention": "#FFC857", "error": "#FF5C7A" },
+  "typography": { "fontUi": "Inter, system-ui, sans-serif", "fontMono": "JetBrains Mono, SFMono-Regular, monospace", "headingWeight": 800, "bodyWeight": 500 },
+  "radius": { "sm": 7, "md": 10, "lg": 12, "xl": 16 },
+  "spacing": { "density": "comfortable", "base": 8 },
+  "effects": { "shadowStrength": "medium", "glowStrength": "medium", "glassBlur": 14, "backgroundNoise": false },
+  "components": { "card": { "borderWidth": 1, "surfaceOpacity": 0.96 }, "badge": { "variant": "soft", "uppercase": true } },
+  "progress": { "height": 7, "radius": 999 },
+  "agent": { "activeRail": true, "promptMarker": ">" },
+  "appChrome": { "background": "#1A101D", "trafficLights": true }
+}

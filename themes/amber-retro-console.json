@@ -1,0 +1,23 @@
+{
+  "id": "amber-retro-console",
+  "name": "Amber Retro Console",
+  "mode": "dark",
+  "version": "1.0.0",
+  "author": "Built-in",
+  "palette": {
+    "background": { "default": "#120F08", "paper": "#1C170C", "elevated": "#261F10" },
+    "text": { "primary": "#FFF4D6", "secondary": "#D7C08C", "muted": "#A58C56", "dim": "#6F5D37" },
+    "accent": "#F59E0B",
+    "border": "#3B2F18",
+    "divider": "#2D2413"
+  },
+  "status": { "running": "#F59E0B", "idle": "#9A8A6B", "waiting": "#FBBF24", "attention": "#FBBF24", "error": "#F87171" },
+  "typography": { "fontUi": "Inter, system-ui, sans-serif", "fontMono": "JetBrains Mono, SFMono-Regular, monospace", "headingWeight": 700, "bodyWeight": 500 },
+  "radius": { "sm": 4, "md": 6, "lg": 8, "xl": 12 },
+  "spacing": { "density": "compact", "base": 4 },
+  "effects": { "shadowStrength": "subtle", "glowStrength": "subtle", "glassBlur": 6, "backgroundNoise": true },
+  "components": { "card": { "borderWidth": 1, "surfaceOpacity": 0.96 }, "badge": { "variant": "soft", "uppercase": true } },
+  "progress": { "height": 6, "radius": 999 },
+  "agent": { "activeRail": true, "promptMarker": ">" },
+  "appChrome": { "background": "#181309", "trafficLights": true }
+}

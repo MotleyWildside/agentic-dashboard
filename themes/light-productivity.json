@@ -1,0 +1,23 @@
+{
+  "id": "light-productivity",
+  "name": "Light Productivity",
+  "mode": "light",
+  "version": "1.0.0",
+  "author": "Built-in",
+  "palette": {
+    "background": { "default": "#F6F7F9", "paper": "#FFFFFF", "elevated": "#F0F2F5" },
+    "text": { "primary": "#111827", "secondary": "#4B5563", "muted": "#6B7280", "dim": "#9CA3AF" },
+    "accent": "#2563EB",
+    "border": "#D8DEE8",
+    "divider": "#E5E7EB"
+  },
+  "status": { "running": "#2563EB", "idle": "#6B7280", "waiting": "#D97706", "attention": "#D97706", "error": "#DC2626" },
+  "typography": { "fontUi": "Inter, system-ui, sans-serif", "fontMono": "SFMono-Regular, Menlo, Consolas, monospace", "headingWeight": 700, "bodyWeight": 500 },
+  "radius": { "sm": 6, "md": 8, "lg": 10, "xl": 14 },
+  "spacing": { "density": "comfortable", "base": 8 },
+  "effects": { "shadowStrength": "subtle", "glowStrength": "none", "glassBlur": 10, "backgroundNoise": false },
+  "components": { "card": { "borderWidth": 1, "surfaceOpacity": 1 }, "badge": { "variant": "soft", "uppercase": true } },
+  "progress": { "height": 6, "radius": 999 },
+  "agent": { "activeRail": true, "promptMarker": ">" },
+  "appChrome": { "background": "#FFFFFF", "trafficLights": true }
+}
