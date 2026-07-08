@@ -14,6 +14,7 @@
     "server": "FREE_PORT=1 node --watch server/index.ts",
     "start": "node server/index.ts",
     "scan": "node scripts/scan.ts",
+    "setup:claude": "node scripts/setup-claude-statusline.ts",
     "test": "node --test \"test/*.test.ts\"",
     "build": "vite build",
     "electron": "npm run build:server && node electron/launch.cjs",
@@ -32,6 +33,7 @@
     "productName": "Mimiron",
     "icon": "build/icon",
     "asar": true,
+    "afterPack": "scripts/after-pack-mac.cjs",
     "directories": {
       "output": "dist-app"
     },
@@ -40,6 +42,8 @@
       "dist-server/server/**/*",
       "dist-server/shared/**/*",
       "server/plugin-assets/**/*",
+      "scripts/claude-statusline-reporter.js",
+      "scripts/claude-statusline-wrapper.sh",
       "public/**/*",
       "themes/**/*",
       "package.json"

@@ -25,6 +25,7 @@ the frontend, and (compiled) the Electron main process.
 | `server/lib/dashboard.ts` | Pure validation/normalization of widget layouts for POST /api/settings | shared/types |
 | `server/lib/collect.ts` | Pure `collectWidgetData(plugins, makeCtx)`: runs `collectData` with failure isolation → `snapshot.widgetData` (ADR-0006) | shared/types |
 | `server/lib/assets.ts` | Bundled asset helpers (e.g. plugin logo files → data URLs) that work from TS sources, compiled `dist-server/`, and packaged Electron `app.asar` | node builtins |
+| `server/lib/claudeStatusline.ts` | Opt-in Claude Code statusLine installer: copies the reporter/wrapper to `~/.agent-dashboard/`; wraps existing custom statuslines instead of discarding them | config, node builtins |
 | `server/plugins/registry.ts` | Scans its own dir for `*.ts`/`*.js` plugin files, validates the contract (id/name + collect or collectData), exposes `plugins` + `pluginMeta()`; `loadPluginsFrom(dir)` for tests | shared/types |
 | `server/plugins/claude.ts`, `codex.ts` | Plugin manifests: identity, logo, `matchProcess`, wire to collector | collectors |
 | `server/plugins/example-pulse.ts` | Reference **custom-widget** plugin: `widgetType: 'pulse'` + `collectData`, not an agent (ADR-0006) | collectors |
@@ -73,7 +74,7 @@ module) so it stays unit-testable.
 
 | File | Responsibility |
 |---|---|
-| `electron/main.cjs` | Boots the compiled server (`dist-server/server/index.js`), creates the window, owns file-based theme persistence over IPC (`themes:*` channels) |
+| `electron/main.cjs` | Checks Claude statusLine setup unless `MIMIRON_SKIP_CLAUDE_STATUSLINE_SETUP=1`, asks before changing Claude settings, boots the compiled server (`dist-server/server/index.js`), creates the window, owns file-based theme persistence over IPC (`themes:*` channels) |
 | `electron/preload.cjs` | Exposes `window.agentThemes` (ThemeApi) via contextBridge |
 | `electron/launch.cjs` | Spawns Electron stripped of `ELECTRON_RUN_AS_NODE` |
 
@@ -89,6 +90,9 @@ and the files are thin. They consume compiled TS via `dist-server/`
 | `public/` | **Vite build output**, committed so `npm start` works without a build step. Regenerate with `npm run build` |
 | `dist-server/` | tsc output of server+shared for Electron; gitignored; regenerate with `npm run build:server` |
 | `scripts/scan.ts` | One-shot collector run (`npm run scan`) |
+| `scripts/round-app-icon.cjs` | Build helper that applies a real rounded alpha mask to `build/icon.png` before native icon containers are regenerated |
+| `scripts/setup-claude-statusline.ts` | Opt-in helper (`npm run setup:claude`) that configures/wraps Claude Code's statusLine for live Claude cost/limit data |
 | `scripts/claude-statusline-reporter.js` | User-installed Claude Code statusline command; **stays JS** — its absolute path is baked into users' `~/.claude/settings.json` |
+| `scripts/claude-statusline-wrapper.sh` | User-installed Claude Code statusline wrapper; captures raw JSON for Mimiron, then forwards stdin to the user's previous statusline command without requiring `node` |
 | `test/` | `node:test` suite + plugin fixtures ([[testing]]) |
 | `docs/knowledge-base/` | This wiki |

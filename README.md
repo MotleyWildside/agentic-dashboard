@@ -16,6 +16,7 @@ A local-first dashboard for monitoring your AI coding agents — **Claude Code**
 npm run start        # serve the dashboard at http://127.0.0.1:4321
 npm run dev          # server (:8765) + Vite dev frontend (:5173) with hot reload
 npm run scan         # one-shot: print what data is available on this machine
+npm run setup:claude # opt-in: configure Claude Code's statusLine for live limits/cost
 npm test             # run the test suite (node:test, no extra deps)
 npm run build        # rebuild the frontend bundle into public/
 ```
@@ -55,17 +56,20 @@ npm run dist:win     # → dist-app/*.exe   (NSIS installer), build on Windows
 npm run dist         # both, if your host toolchain supports it
 ```
 
-- **macOS**: build on a Mac. The app is **unsigned**, so on first launch macOS
-  Gatekeeper will block it — recipients right-click the app → **Open** → **Open**
-  (only needed once). Ship the matching `.dmg` for the target's chip (Apple
-  Silicon = `-arm64.dmg`, Intel = the plain `.dmg`).
+- **macOS**: build on a Mac. The app is ad-hoc signed but not Developer
+  ID-notarized, so on first launch Gatekeeper may block it — recipients
+  right-click the app → **Open** → **Open** (only needed once). Ship the
+  matching `.dmg` for the target's chip (Apple Silicon = `-arm64.dmg`, Intel =
+  the plain `.dmg`). If macOS still says the app is damaged after downloading,
+  remove quarantine on the installed app with
+  `xattr -dr com.apple.quarantine /Applications/Mimiron.app`.
 - **Windows**: run `npm run dist:win` **on a Windows machine** (or CI). The
   resulting `.exe` is also unsigned, so SmartScreen shows a "More info → Run
   anyway" prompt on first run. Cross-building a Windows `.exe` from macOS is
   possible but needs Wine and is fiddly — building on Windows is the clean path.
 
-Packaged builds run on their defaults (port 4321, reading `~/.claude` and
-`~/.codex`); the `.env` file is a dev-time convenience and is not bundled.
+Packaged builds ask macOS for a free local port and read local `~/.claude` /
+`~/.codex` data; the `.env` file is a dev-time convenience and is not bundled.
 
 ## Where the data comes from
 
@@ -100,6 +104,17 @@ Add to `~/.claude/settings.json`:
 ```
 
 (or run `/statusline` inside Claude Code and point it at the script).
+
+The Electron app checks this setup on startup and asks for confirmation before
+changing Claude Code settings. From source, you can also run
+`npm run setup:claude`. Setup copies a small `/bin/sh` wrapper to
+`~/.agent-dashboard/claude-statusline-wrapper.sh`. If Claude Code has no
+statusLine yet, setup points Claude at the wrapper. If you already have a
+custom statusLine, setup captures the same JSON payload for Mimiron and then
+forwards it to your previous command, preserving your terminal statusline
+output without requiring `node` on Claude Code's PATH. Set
+`MIMIRON_SKIP_CLAUDE_STATUSLINE_SETUP=1` before launching the app to skip this
+startup check.
 
 ### Codex
 

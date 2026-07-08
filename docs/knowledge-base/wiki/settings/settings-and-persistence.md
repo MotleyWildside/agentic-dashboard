@@ -36,11 +36,20 @@ Pruned to a 7-day TTL on every save. Dismissing never touches transcripts.
 | File | Writer | Read by | Trusted for |
 |---|---|---|---|
 | `~/.agent-dashboard/claude-state.json` | `scripts/claude-statusline-reporter.js` (user-installed Claude statusline) | claude collector | 2 min |
+| `~/.agent-dashboard/claude-statusline-latest.json` | `scripts/claude-statusline-wrapper.sh` | claude collector | 2 min |
+| `~/.agent-dashboard/claude-statusline-reporter.js` | Electron startup after user confirmation / `npm run setup:claude` | Claude Code statusLine command | until replaced |
+| `~/.agent-dashboard/claude-statusline-wrapper.sh` | Electron startup after user confirmation / `npm run setup:claude` | Claude Code statusLine command | until replaced |
+| `~/.agent-dashboard/claude-statusline-wrapper.json` | Electron startup after user confirmation / `npm run setup:claude` | wrapper script | until replaced |
 | `~/.agent-dashboard/codex-state.json` | user wrapper scripts / future hooks | codex collector | 10 min |
 | `~/.agent-dashboard/manual.json` | the user, by hand | `applyManualOverrides` (all agents) | 24 h |
 | `~/.claude/projects/**`, `~/.codex/sessions/**` | the agents themselves | collectors | `SESSION_RETENTION_S` |
 
-Staleness limits exist because an outdated override is worse than none.
+Staleness limits exist because an outdated override is worse than none. The
+reporter/wrapper script copies are executable code, not data; setup copies them
+out of the repo/app bundle so Claude Code can run a stable filesystem path. The
+shell wrapper is used for automatic setup because it does not require `node` on
+Claude Code's PATH. The wrapper config stores the previous custom statusLine
+command when setup needs to preserve existing terminal statusline output.
 
 ## Theme persistence (two backends, same `ThemeApi`)
 

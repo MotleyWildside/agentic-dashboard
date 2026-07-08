@@ -24,19 +24,7 @@ const STATE_DIR = process.env.AGENT_DASHBOARD_DIR
   ? process.env.AGENT_DASHBOARD_DIR.replace(/^~(?=\/|$)/, os.homedir())
   : path.join(os.homedir(), '.agent-dashboard');
 const STATE_FILE = path.join(STATE_DIR, 'claude-state.json');
-
-let raw = '';
-process.stdin.setEncoding('utf8');
-process.stdin.on('data', (c) => (raw += c));
-process.stdin.on('end', () => {
-  let input;
-  try {
-    input = JSON.parse(raw);
-  } catch {
-    process.stdout.write('claude');
-    return;
-  }
-
+export function normalizeClaudeStatuslinePayload(input) {
   const sessionId = input.session_id || 'unknown';
   const model = input.model?.display_name || input.model?.id || null;
   const effort = input.effort?.level ? { level: input.effort.level } : null;
@@ -65,13 +53,7 @@ process.stdin.on('end', () => {
         }
       : null;
 
-  let state = { sessions: {}, latest: null };
-  try {
-    state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-    if (!state.sessions) state = { sessions: {}, latest: null };
-  } catch { /* first run */ }
-
-  state.sessions[sessionId] = {
+  return {
     sessionId,
     model,
     effort,
@@ -84,6 +66,30 @@ process.stdin.on('end', () => {
     version: input.version || null,
     updatedAt: new Date().toISOString(),
   };
+}
+
+let raw = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (c) => (raw += c));
+process.stdin.on('end', () => {
+  let input;
+  try {
+    input = JSON.parse(raw);
+  } catch {
+    process.stdout.write('claude');
+    return;
+  }
+
+  const normalized = normalizeClaudeStatuslinePayload(input);
+  const { sessionId, model, cwd, costUsd } = normalized;
+
+  let state = { sessions: {}, latest: null };
+  try {
+    state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+    if (!state.sessions) state = { sessions: {}, latest: null };
+  } catch { /* first run */ }
+
+  state.sessions[sessionId] = normalized;
   state.latest = sessionId;
 
   // Prune sessions not updated in 24h.

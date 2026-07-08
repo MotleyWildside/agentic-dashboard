@@ -5,7 +5,7 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, shell } = require('electron');
 
 // The dashboard is local-first: one window per instance is plenty. A second
 // launch just focuses the existing window (see 'second-instance' below).
@@ -168,6 +168,39 @@ function registerThemeIpc() {
 }
 
 async function startServer() {
+  if (process.env.MIMIRON_SKIP_CLAUDE_STATUSLINE_SETUP !== '1') {
+    try {
+      const { ensureClaudeStatusline } = await import(distPath('server', 'lib', 'claudeStatusline.js'));
+      const plan = ensureClaudeStatusline({ dryRun: true });
+      if (['installed', 'updated-existing-reporter', 'wrapped-existing-statusline'].includes(plan.status)) {
+        const detail = plan.status === 'wrapped-existing-statusline'
+          ? 'Mimiron will wrap your existing Claude Code status line so its output stays visible, while also capturing Claude usage limits for the dashboard.'
+          : 'Mimiron will configure Claude Code to send local status line metadata to the dashboard so Claude usage limits can be shown.';
+        const choice = await dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Enable Claude limits', 'Not now'],
+          defaultId: 0,
+          cancelId: 1,
+          title: 'Enable Claude limits in Mimiron?',
+          message: 'Mimiron can show Claude 5h/7d limits by configuring Claude Code statusLine.',
+          detail: `${detail}\n\nSettings file:\n${plan.settingsPath}`,
+        });
+        if (choice.response === 0) {
+          const setup = ensureClaudeStatusline();
+          console.log(`Claude statusLine ${setup.status}: ${setup.settingsPath}`);
+        } else {
+          console.log('Claude statusLine setup skipped by user.');
+        }
+      } else if (!['already-configured', 'already-wrapped'].includes(plan.status)) {
+        console.warn(`Claude statusLine setup: ${plan.status}`);
+      } else {
+        console.log(`Claude statusLine ${plan.status}: ${plan.settingsPath}`);
+      }
+    } catch (err) {
+      console.warn('Claude statusLine setup skipped:', err);
+    }
+  }
+
   // Importing the server module boots the HTTP server + poll loop as a side
   // effect and hands back a promise that resolves with the bound URL. Use an
   // absolute file:// URL so ESM resolution works both in dev and from app.asar.

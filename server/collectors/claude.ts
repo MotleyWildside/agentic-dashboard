@@ -117,6 +117,70 @@ function effortFromReporter(reporterSession: any = {}): string | null {
   return reporterSession.effort?.level || reporterSession.effortLevel || null;
 }
 
+function reporterSessionFromStatuslinePayload(input: any = {}): any | null {
+  if (!input || typeof input !== 'object') return null;
+  const sessionId = input.session_id || 'unknown';
+  const model = input.model?.display_name || input.model?.id || null;
+  const effort = input.effort?.level ? { level: input.effort.level } : null;
+  const cwd = input.workspace?.current_dir || input.cwd || null;
+  const costUsd = typeof input.cost?.total_cost_usd === 'number' ? input.cost.total_cost_usd : null;
+
+  const cw = input.context_window || {};
+  const contextUsedPercent = typeof cw.used_percentage === 'number' ? cw.used_percentage : null;
+  const contextWindowSize = typeof cw.context_window_size === 'number' ? cw.context_window_size : null;
+  const contextTokens =
+    typeof cw.total_input_tokens === 'number'
+      ? cw.total_input_tokens + (cw.total_output_tokens || 0)
+      : null;
+
+  const rl = input.rate_limits || {};
+  const rateLimits =
+    rl.five_hour || rl.seven_day
+      ? {
+          shortWindowPercent: rl.five_hour?.used_percentage ?? null,
+          longWindowPercent: rl.seven_day?.used_percentage ?? null,
+          resetAt: rl.five_hour?.resets_at
+            ? new Date(rl.five_hour.resets_at * 1000).toISOString()
+            : null,
+        }
+      : null;
+
+  return {
+    sessionId,
+    model,
+    effort,
+    cwd,
+    costUsd,
+    contextUsedPercent,
+    contextWindowSize,
+    contextTokens,
+    rateLimits,
+    version: input.version || null,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function reporterWithRawStatusline(reporter: any, rawPayload: any): any {
+  const rawSession = reporterSessionFromStatuslinePayload(rawPayload);
+  if (!rawSession) return reporter;
+  const next = reporter && typeof reporter === 'object'
+    ? { ...reporter, sessions: { ...(reporter.sessions || {}) } }
+    : { sessions: {}, latest: null };
+  next.sessions[rawSession.sessionId] = rawSession;
+  next.latest = rawSession.sessionId;
+  return next;
+}
+
+function freshestReporterLimits(reporter: any): any | null {
+  let freshest: any = null;
+  for (const r of Object.values<any>(reporter?.sessions || {})) {
+    if (r?.rateLimits && (!freshest || r.updatedAt > freshest.updatedAt)) {
+      freshest = { ...r.rateLimits, updatedAt: r.updatedAt };
+    }
+  }
+  return freshest;
+}
+
 /**
  * If the last consequential line is an assistant tool_use awaiting a user
  * decision (AskUserQuestion / ExitPlanMode) with no matching tool_result yet,
@@ -215,7 +279,11 @@ export async function collectClaude(ctx: Partial<CollectContext> = {}): Promise<
   const state = emptyAgentState('claude', 'Claude Code', '✳');
 
   const statePath = path.join(config.agentDashboardDir, 'claude-state.json');
-  const reporter = readJsonSync(statePath, 2 * 60 * 1000); // trust for 2 minutes
+  const rawStatuslinePath = path.join(config.agentDashboardDir, 'claude-statusline-latest.json');
+  const reporter = reporterWithRawStatusline(
+    readJsonSync(statePath, 2 * 60 * 1000), // trust for 2 minutes
+    readJsonSync(rawStatuslinePath, 2 * 60 * 1000)
+  );
 
   const files = await listTranscripts();
   const fresh = files.filter((f) => ageSeconds(f.mtimeMs) <= config.sessionRetentionS);
@@ -235,7 +303,7 @@ export async function collectClaude(ctx: Partial<CollectContext> = {}): Promise<
   }
 
   // Statusline reporter overlays real cost/model/context/rate-limits per session.
-  let freshestLimits: any = null;
+  let freshestLimits: any = freshestReporterLimits(reporter);
   if (reporter?.sessions) {
     for (const session of state.sessions) {
       const r = session.sessionId ? reporter.sessions[session.sessionId] : null;
@@ -248,10 +316,6 @@ export async function collectClaude(ctx: Partial<CollectContext> = {}): Promise<
       if (typeof r.contextTokens === 'number') {
         session.contextTokens = r.contextTokens;
         session.tokens.total = r.contextTokens;
-      }
-      // Rate limits are account-level; keep the most recently reported ones.
-      if (r.rateLimits && (!freshestLimits || r.updatedAt > freshestLimits.updatedAt)) {
-        freshestLimits = { ...r.rateLimits, updatedAt: r.updatedAt };
       }
     }
   }
@@ -275,6 +339,12 @@ export async function collectClaude(ctx: Partial<CollectContext> = {}): Promise<
       ...(state.costUsd != null ? { costUsd: 'real' as const } : {}),
       ...(freshestLimits ? { rateLimits: 'real' as const } : {}),
     };
+  }
+
+  if (!state.sessions.length && freshestLimits) {
+    const { updatedAt, ...rl } = freshestLimits;
+    state.rateLimits = rl;
+    state.sources.rateLimits = 'real';
   }
 
   if (!reporter) {

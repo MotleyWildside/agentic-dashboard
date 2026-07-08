@@ -2,6 +2,29 @@
 
 Newest first. One line per meaningful wiki change: date · pages · what/why.
 
+- **2026-07-08** · `development/commands.md`,
+  `architecture/module-map.md` · Added `scripts/round-app-icon.cjs` and
+  documented that Electron app icon assets must keep a real transparent
+  rounded-corner alpha mask before regenerating native containers, so copied
+  macOS app bundles do not show a square white icon.
+
+- **2026-07-08** · `development/commands.md`,
+  `settings/settings-and-persistence.md`, `architecture/module-map.md`,
+  root `README.md` · Added Electron startup prompt plus manual
+  `npm run setup:claude` for Claude Code statusLine setup. After confirmation,
+  setup copies Mimiron's shell wrapper to `~/.agent-dashboard/`; when a custom
+  statusLine already exists, setup wraps it so Mimiron captures live limits/cost
+  while preserving the user's terminal statusline output without requiring
+  `node` on Claude Code's PATH. Claude collector also reads the wrapper's raw
+  statusLine payload directly, so account-level limits survive session-id
+  mismatches. Set `MIMIRON_SKIP_CLAUDE_STATUSLINE_SETUP=1` to skip startup
+  checks.
+
+- **2026-07-08** · `development/commands.md`, root `README.md` · macOS
+  Electron packaging now runs an `afterPack` hook that ad-hoc signs the `.app`
+  bundle, preventing invalid "damaged" app signatures while still documenting
+  that public distribution requires notarization.
+
 - **2026-07-08** · `runtime-boundaries.md`, `development/commands.md` ·
   Packaged Electron now sets `PORT=0`, letting the OS assign a free loopback
   port and avoiding collisions/accidental attachment to old dashboard servers.

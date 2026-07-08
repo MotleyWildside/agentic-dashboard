@@ -13,6 +13,7 @@ stripping). All commands from the repo root.
 | `npm run lint` | docs linter + architecture linter ([[linting]]) — also runs inside `npm test` |
 | `npm run typecheck` | `tsc -p tsconfig.json` (frontend) + `tsc -p tsconfig.server.json --noEmit` (server/shared/tests) |
 | `npm run scan` | One-shot: run every provider once, print normalized JSON |
+| `npm run setup:claude` | Manual Claude Code statusLine setup for Mimiron's reporter; Electron asks before running the same setup on startup |
 
 ## Building
 
@@ -21,7 +22,7 @@ stripping). All commands from the repo root.
 | `npm run build` | Vite → `public/` (**committed**; run this after any `src/` change or `npm start`/Electron serve a stale UI) |
 | `npm run build:server` | `tsc -p tsconfig.server.json` → `dist-server/` (gitignored; needed by Electron) |
 | `npm run app` | `build:server` + launch the Electron shell (dev launch uses the configured/default port; packaged Electron asks the OS for a free loopback port) |
-| `npm run dist:mac` / `dist:win` / `dist` | full build (frontend + server) + electron-builder → `dist-app/` using `build/icon.*` for app icons (unsigned; see README for Gatekeeper/SmartScreen notes) |
+| `npm run dist:mac` / `dist:win` / `dist` | full build (frontend + server) + electron-builder → `dist-app/` using `build/icon.*`; mac builds are ad-hoc signed by `scripts/after-pack-mac.cjs` but not notarized (see README for Gatekeeper/SmartScreen notes) |
 
 ## Environment
 
@@ -36,6 +37,10 @@ overridden.
   (server for Electron, gitignored). `npm start` needs neither rebuilt for
   server changes — it runs the TS sources — but frontend changes always need
   `npm run build` unless you're on the Vite dev server.
+- `build/icon.png` must keep real transparent rounded corners before
+  `build/icon.icns` is regenerated; `test/electron-icon.test.ts` checks the
+  source alpha mask so transferred macOS app bundles don't fall back to a
+  square white icon.
 - The server frees its own port politely on Ctrl+C; `FREE_PORT=1` (dev) also
   kills zombie holders on startup (macOS/Linux, `lsof`).
 - `scripts/claude-statusline-reporter.js` is referenced by absolute path from
