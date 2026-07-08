@@ -1,6 +1,6 @@
 # Wiki Index
 
-The maintained knowledge base for Agentic Dashboard. Rules for editing:
+The maintained knowledge base for Mimiron. Rules for editing:
 [../schema.md](../schema.md). New here? Start with the
 [architecture overview](architecture/overview.md).
 

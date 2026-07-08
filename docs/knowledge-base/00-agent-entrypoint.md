@@ -1,6 +1,6 @@
 # Agent Entrypoint — read this first
 
-You are an AI agent about to work on **Agentic Dashboard**: a local-first dashboard
+You are an AI agent about to work on **Mimiron**: a local-first dashboard
 (Node server + React frontend + optional Electron shell) that monitors AI coding
 agents (Claude Code, Codex) by reading their local log files. It never invents data
 and never sends anything off-machine.

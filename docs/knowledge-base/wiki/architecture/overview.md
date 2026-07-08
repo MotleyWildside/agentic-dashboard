@@ -1,6 +1,6 @@
 # Architecture Overview
 
-Agentic Dashboard is a **local-first monitoring dashboard for AI coding agents**
+Mimiron is a **local-first monitoring dashboard for AI coding agents**
 (Claude Code, OpenAI Codex today). It reads agents' local log files, normalizes
 them into a common data model, and renders status, sessions, context usage,
 costs, rate limits, and required user actions — on a small always-on monitor or

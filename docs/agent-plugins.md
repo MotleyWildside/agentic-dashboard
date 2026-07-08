@@ -5,7 +5,7 @@
 > [adding-an-agent-provider](knowledge-base/wiki/agents/adding-an-agent-provider.md)
 > for the complete recipe.
 
-Agent Control discovers agents from `server/plugins/*.ts`.
+Mimiron discovers agents from `server/plugins/*.ts`.
 
 To add a new agent:
 
@@ -14,7 +14,7 @@ To add a new agent:
    - `id`: stable lowercase key, for settings and SSE events.
    - `name`: display name in the dashboard and Settings > Agents.
    - `icon`: fallback glyph.
-   - `logo`: optional inline SVG.
+   - `logo`: optional inline SVG or local `/plugin-assets/...` image URL.
    - `layout`: optional widget sizing defaults/limits in grid units:
      `{ minW, minH, defaultW, defaultH, maxW, maxH }`.
    - `matchProcess(cmd)`: optional `ps` matcher for liveness detection.

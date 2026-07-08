@@ -9,7 +9,7 @@ semantics and the guarantees each side makes.
 
 | Contract element | Where | Semantics |
 |---|---|---|
-| Identity | `id`, `name`, `icon`, `logo?` | `id` is a stable key used in settings, dismissals (`"<id>:<sessionId>"`), SSE events, and widget instances. Renaming an id orphans user settings — don't. |
+| Identity | `id`, `name`, `icon`, `logo?` | `id` is a stable key used in settings, dismissals (`"<id>:<sessionId>"`), SSE events, and widget instances. `logo` may be an inline SVG string or a local `/plugin-assets/...` image URL; remote assets are not allowed. Renaming an id orphans user settings — don't. |
 | Widget sizing | `layout?` | Merged over registry defaults `{ minW:2, minH:2, defaultW:6, defaultH:5, maxW:8, maxH:40 }`; the server clamps widget geometry to these on save. |
 | Liveness signal | `matchProcess?(cmd)` | Ran against every `ps` line each poll. Match ⇒ agent process alive ⇒ an `unknown` agent upgrades to `idle` ("installed, no fresh logs"). Throwing = no-match. |
 | Data (agent card) | `collect?(ctx)` | Async, called every poll **only while the plugin has ≥1 widget**. Returns a full `AgentState` ([[normalized-agent-data]]). |

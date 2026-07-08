@@ -8,7 +8,8 @@ renders as something other than the agent card, see *Custom widgets* below.
    `server/plugins/<id>.ts` (no leading underscore — underscored files are
    skipped by the registry).
 2. **Fill the manifest**: `id` (stable, lowercase, url-safe), `name`, `icon`,
-   optional `logo` (inline SVG), optional `layout` limits, optional
+   optional `logo` (inline SVG or local `/plugin-assets/...` image URL),
+   optional `layout` limits, optional
    `matchProcess`.
 3. **Write the collector** in `server/collectors/<id>.ts`. It must:
    - return an `AgentState` built from `emptyAgentState(id, name, icon)`;

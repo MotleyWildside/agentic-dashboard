@@ -8,7 +8,8 @@
 //   name     — display name shown on the card
 //   icon     — single glyph/emoji fallback, used when `logo` is absent or
 //              hasn't loaded yet on the frontend
-//   logo     — optional inline SVG string (no remote assets)
+//   logo     — optional inline SVG string or local /plugin-assets/... image URL
+//              (no remote assets)
 //   layout   — optional dashboard widget sizing defaults/limits:
 //              { minW, minH, defaultW, defaultH, maxW, maxH } in grid units.
 //   matchProcess — optional (cmd: string) => boolean, tested against every

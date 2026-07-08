@@ -1,5 +1,5 @@
 {
-  "name": "agentic-dashboard",
+  "name": "mimiron",
   "version": "0.1.0",
   "description": "Local-first dashboard for monitoring Claude Code and OpenAI Codex agent sessions",
   "type": "module",
@@ -28,8 +28,8 @@
     "lint:arch": "node scripts/lint-arch.ts"
   },
   "build": {
-    "appId": "com.wildside.agentic-dashboard",
-    "productName": "Agentic Dashboard",
+    "appId": "com.wildside.mimiron",
+    "productName": "Mimiron",
     "icon": "build/icon",
     "asar": true,
     "directories": {
@@ -39,6 +39,7 @@
       "electron/**/*",
       "dist-server/server/**/*",
       "dist-server/shared/**/*",
+      "server/plugin-assets/**/*",
       "public/**/*",
       "themes/**/*",
       "package.json"

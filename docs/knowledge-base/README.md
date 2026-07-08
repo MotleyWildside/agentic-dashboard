@@ -1,4 +1,4 @@
-# Agentic Dashboard — Knowledge Base (WikiLLM)
+# Mimiron — Knowledge Base (WikiLLM)
 
 This folder is the **persistent, compiled understanding of this project**, maintained
 like code. Instead of every future AI agent (or developer) re-discovering the

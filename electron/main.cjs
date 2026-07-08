@@ -188,7 +188,7 @@ function createWindow(url) {
     height: 800,
     minWidth: 720,
     minHeight: 480,
-    title: 'Agentic Dashboard',
+    title: 'Mimiron',
     backgroundColor: '#0d1117',
     webPreferences: {
       // Renderer only talks to the local HTTP API — no Node access needed.

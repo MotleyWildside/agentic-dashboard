@@ -55,7 +55,7 @@ export function TopBar({ snapshot, connected, onSettings, editMode, onToggleEdit
       >
         <TerminalOutlinedIcon fontSize="small" />
       </Box>
-      <Typography sx={{ fontWeight: 800, letterSpacing: 0, whiteSpace: 'nowrap', fontSize: compact ? 14 : 16 }}>Agent Control</Typography>
+      <Typography sx={{ fontWeight: 800, letterSpacing: 0, whiteSpace: 'nowrap', fontSize: compact ? 14 : 16 }}>Mimiron</Typography>
       <Chip
         size="small"
         icon={<BoltOutlinedIcon sx={{ color: `${theme.dashboard.status.running} !important` }} />}

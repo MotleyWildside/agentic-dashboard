@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadPluginsFrom, plugins, pluginMeta } from '../server/plugins/registry.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.join(__dirname, '..');
 const FIXTURES = path.join(__dirname, 'fixtures', 'plugins');
 
 test('loadPluginsFrom isolates broken plugins and enforces the contract', async () => {
@@ -50,6 +52,15 @@ test('pluginMeta exposes layout defaults, widgetType, and no collector internals
   // Agent plugins default to the standard card; the pulse example opts into its own renderer.
   assert.equal(byId.claude.widgetType, 'agent-card');
   assert.equal(byId.pulse.widgetType, 'pulse');
+});
+
+test('claude and codex logo metadata points at bundled local assets', () => {
+  const byId = Object.fromEntries(pluginMeta().map((m) => [m.id, m]));
+  for (const id of ['claude', 'codex'] as const) {
+    assert.match(byId[id].logo || '', /^\/plugin-assets\/logos\/.+\.(webp|png)$/);
+    const rel = byId[id].logo!.replace('/plugin-assets/', '');
+    assert.equal(fs.existsSync(path.join(REPO_ROOT, 'server', 'plugin-assets', rel)), true, `${id} logo asset exists`);
+  }
 });
 
 test('process matchers match their own CLIs and not each other', () => {

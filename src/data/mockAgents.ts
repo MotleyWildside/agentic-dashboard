@@ -11,8 +11,8 @@ export const mockSnapshot: Snapshot = {
       status: 'running',
       sessions: [
         {
-          sessionId: 'claude-active-agentic-dashboard',
-          projectName: 'AgenticDashboard',
+          sessionId: 'claude-active-mimiron',
+          projectName: 'Mimiron',
           cwd: '/Users/motleywildside/Work/WildsideProjects/AgenticDashboard',
           model: 'claude-opus-4-8',
           effort: 'xhigh',

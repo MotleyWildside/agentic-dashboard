@@ -35,9 +35,22 @@ const MIME: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json',
   '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
   '.png': 'image/png',
   '.ico': 'image/x-icon',
 };
+
+// Stable, repo-owned assets referenced by plugin metadata. Kept outside
+// `public/` because Vite empties that build output directory on every build.
+const PLUGIN_ASSETS_DIR = await (async () => {
+  for (const candidate of [path.join(__dirname, 'plugin-assets'), path.join(__dirname, '..', '..', 'server', 'plugin-assets')]) {
+    try {
+      await fs.access(candidate);
+      return candidate;
+    } catch { /* keep looking */ }
+  }
+  return path.join(__dirname, 'plugin-assets');
+})();
 
 // --- State ---
 let snapshot: Snapshot = { updatedAt: null, agents: [], processes: null, widgetData: null };
@@ -179,6 +192,35 @@ async function serveStatic(res: ServerResponse, urlPath: string): Promise<void> 
   }
 }
 
+function isInsideDir(baseDir: string, file: string): boolean {
+  const relative = path.relative(baseDir, file);
+  return relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative);
+}
+
+async function servePluginAsset(res: ServerResponse, urlPath: string): Promise<void> {
+  const prefix = '/plugin-assets/';
+  let rel: string;
+  try {
+    rel = decodeURIComponent(urlPath.slice(prefix.length));
+  } catch {
+    res.writeHead(400); res.end('Bad request'); return;
+  }
+  const file = path.normalize(path.join(PLUGIN_ASSETS_DIR, rel));
+  if (!isInsideDir(PLUGIN_ASSETS_DIR, file)) {
+    res.writeHead(403); res.end('Forbidden'); return;
+  }
+  try {
+    const data = await fs.readFile(file);
+    res.writeHead(200, {
+      'Content-Type': MIME[path.extname(file)] || 'application/octet-stream',
+      'Cache-Control': 'public, max-age=3600',
+    });
+    res.end(data);
+  } catch {
+    res.writeHead(404); res.end('Not found');
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host}`);
   const p = url.pathname;
@@ -267,6 +309,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (p.startsWith('/plugin-assets/')) return servePluginAsset(res, p);
+
   return serveStatic(res, p);
 });
 
@@ -326,7 +370,7 @@ export interface ServerInfo {
 export const ready: Promise<ServerInfo> = new Promise((resolve, reject) => {
   let retried = false;
   function onListening(): void {
-    console.log(`Agentic Dashboard → http://${config.host}:${config.port}`);
+    console.log(`Mimiron → http://${config.host}:${config.port}`);
     console.log(`Polling every ${config.pollMs}ms | Claude: ${config.claudeProjectsDir} | Codex: ${config.codexSessionsDir}`);
     resolve({ host: config.host, port: config.port, url: `http://${config.host}:${config.port}` });
   }

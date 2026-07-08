@@ -3,7 +3,7 @@ const path = require('node:path');
 const { app, BrowserWindow } = require('electron');
 
 const url = process.argv[2] || 'http://127.0.0.1:4321/';
-const output = process.argv[3] || path.join(process.cwd(), 'agent-control-1024x600.png');
+const output = process.argv[3] || path.join(process.cwd(), 'mimiron-1024x600.png');
 const width = Number(process.argv[4] || 1024);
 const height = Number(process.argv[5] || 600);
 const action = process.argv[6] || '';
@@ -38,7 +38,7 @@ app.whenReady().then(async () => {
       text: el.textContent.trim().slice(0, 70),
       rect: el.getBoundingClientRect().toJSON()
     }));
-    return { body: body.toJSON(), hasDashboard: text.includes('Agent Control') && text.includes('Claude Code') && text.includes('Codex'), offscreenCount: offscreen.length, offscreen };
+    return { body: body.toJSON(), hasDashboard: text.includes('Mimiron') && text.includes('Claude Code') && text.includes('Codex'), offscreenCount: offscreen.length, offscreen };
   })()`);
   console.log(JSON.stringify({ output, metrics }, null, 2));
   app.quit();

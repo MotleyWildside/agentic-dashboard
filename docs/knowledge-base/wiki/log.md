@@ -2,6 +2,14 @@
 
 Newest first. One line per meaningful wiki change: date · pages · what/why.
 
+- **2026-07-08** · `log.md` · Codex uses the new bundled color PNG logo, and
+  image-backed agent logos render without the extra card-icon border.
+
+- **2026-07-08** · `00-agent-entrypoint.md`, `README.md`, `wiki/index.md`,
+  `architecture/overview.md`, root `README.md`, app metadata · Renamed the
+  application brand from Agentic Dashboard / Agent Control to Mimiron across the
+  source app shell, Electron/package metadata, server startup banner, and docs.
+
 - **2026-07-08** · `development/commands.md`, `package.json` · Added
   Electron app icon resources under `build/icon.*` (`.svg` source plus
   `.png`, `.icns`, `.ico`) and wired electron-builder to `build.icon`;
@@ -21,6 +29,12 @@ Newest first. One line per meaningful wiki change: date · pages · what/why.
   (`example-pulse`). Retired architectural-risk #1 (single renderer). Tests:
   `test/collect.test.ts`, `test/widget-resolve.test.ts`, extended
   `test/registry.test.ts` + `data-only.js` fixture.
+
+- **2026-07-08** · `agents/agent-provider-contract.md`,
+  `plugins/plugin-system.md` · Plugin logos may now be either inline SVG or
+  local `/plugin-assets/...` image URLs. Claude/Codex manifests use bundled
+  webp logo assets served by the Node server; frontend logo renderers support
+  both forms and registry tests verify the bundled files exist.
 
 - **2026-07-08** · `widgets/widget-system.md`, `architecture/module-map.md` ·
   Small widgets now show dense session rows (count derived from widget height)

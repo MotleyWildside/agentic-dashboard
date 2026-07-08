@@ -1,4 +1,4 @@
-# Agentic Dashboard
+# Mimiron
 
 A local-first dashboard for monitoring your AI coding agents — **Claude Code** and
 **OpenAI Codex** — designed for a small external monitor (1024×600 / 800×480).
