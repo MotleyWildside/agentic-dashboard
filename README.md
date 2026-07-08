@@ -3,7 +3,9 @@
 A local-first dashboard for monitoring your AI coding agents — **Claude Code** and
 **OpenAI Codex** — designed for a small external monitor (1024×600 / 800×480).
 
-- Zero npm dependencies. Node.js ≥ 18, plain HTML/CSS/JS frontend.
+- TypeScript throughout; zero-dependency Node.js (≥ 22.18) server that runs its
+  `.ts` sources directly (native type stripping); React + MUI frontend built with Vite
+  into `public/` (pre-built output is committed, so `npm start` alone works).
 - Binds to `127.0.0.1` only. Reads local files only. Sends nothing anywhere.
 - Never invents data: every field is labelled `real`, `inferred`, or `manual`;
   missing data shows as `unavailable`.
@@ -12,8 +14,10 @@ A local-first dashboard for monitoring your AI coding agents — **Claude Code**
 
 ```bash
 npm run start        # serve the dashboard at http://127.0.0.1:4321
-npm run dev          # same, with auto-restart on code changes
+npm run dev          # server (:8765) + Vite dev frontend (:5173) with hot reload
 npm run scan         # one-shot: print what data is available on this machine
+npm test             # run the test suite (node:test, no extra deps)
+npm run build        # rebuild the frontend bundle into public/
 ```
 
 Open http://127.0.0.1:4321. Double-click the page to toggle fullscreen (kiosk mode).
@@ -134,23 +138,26 @@ which are surprisingly rich:
 | `GET /api/events` | recent dashboard events (status changes etc.) |
 | `GET /api/config` | effective paths & polling config, plus registered plugin metadata (no secrets) |
 | `GET /api/stream` | Server-Sent Events: `snapshot` + `event` messages |
-| `GET /api/settings` | per-plugin enabled/disabled state |
-| `POST /api/settings` | body `{ plugins: { <id>: { enabled } } }` — toggle an agent window on/off |
+| `GET /api/settings` | dashboard widget layout + derived per-plugin enabled state (a plugin is "enabled" iff it has ≥1 widget on the dashboard) |
+| `POST /api/settings` | body `{ dashboard: { widgets: [...] } }` — save the widget layout (validated & clamped server-side). A legacy `{ plugins }` key is still accepted but no longer drives polling. |
 | `POST /api/dismiss` | body `{ agentId, sessionId }` — hide a session from the dashboard (the transcript file is never touched) |
 
-Agent state shape: see [server/lib/state.js](server/lib/state.js).
+Agent state shape: see [shared/types.ts](shared/types.ts) (`AgentState`).
 
 ## Agent plugins
 
 Each agent window is a plugin under [server/plugins/](server/plugins/) —
-a module with a default export `{ id, name, icon, logo?, collect }`.
+a module with a default export `{ id, name, icon, logo?, layout?, matchProcess?, collect }`.
 `collect(ctx)` returns an agent state shaped like `emptyAgentState()`;
-`ctx.isDismissed(sessionId)` tells you which sessions the user hid.
+`ctx.isDismissed(sessionId)` tells you which sessions the user hid;
+`matchProcess(cmd)` optionally lets the process fallback detect your agent's CLI.
 Adding a new agent (OpenCode, Antigravity, …) is dropping one file here —
-no changes to `server/index.js` or `public/app.js` required. See
-[server/plugins/_template.js](server/plugins/_template.js) for the contract
-and an example. Plugins can be toggled on/off from the ⚙ panel in the UI;
-the state persists to `~/.agent-dashboard/settings.json`.
+no changes to `server/index.ts` or the frontend required. See
+[server/plugins/_template.ts](server/plugins/_template.ts) for the contract,
+and [docs/knowledge-base/](docs/knowledge-base/) for the full architecture wiki.
+Widgets are added/removed from the dashboard's edit mode; the layout persists
+to `~/.agent-dashboard/settings.json`, and only plugins with at least one
+widget are polled.
 
 Dismissed sessions persist to `~/.agent-dashboard/dismissed.json` (pruned
 after 7 days) — hiding a session never deletes its transcript.

@@ -6,20 +6,26 @@
   "private": true,
   "main": "electron/main.cjs",
   "engines": {
-    "node": ">=18.17"
+    "node": ">=22.18"
   },
   "scripts": {
-    "dev": "FREE_PORT=1 PORT=8765 node --watch server/index.js & SERVER=$!; trap 'kill $SERVER 2>/dev/null' EXIT INT TERM; vite",
+    "dev": "FREE_PORT=1 PORT=8765 node --watch server/index.ts & SERVER=$!; trap 'kill $SERVER 2>/dev/null' EXIT INT TERM; vite",
     "dev:web": "vite",
-    "server": "FREE_PORT=1 node --watch server/index.js",
-    "start": "node server/index.js",
-    "scan": "node scripts/scan.js",
+    "server": "FREE_PORT=1 node --watch server/index.ts",
+    "start": "node server/index.ts",
+    "scan": "node scripts/scan.ts",
+    "test": "node --test \"test/*.test.ts\"",
     "build": "vite build",
-    "electron": "node electron/launch.cjs",
-    "app": "node electron/launch.cjs",
-    "dist:mac": "electron-builder --mac",
-    "dist:win": "electron-builder --win",
-    "dist": "electron-builder -mw"
+    "electron": "npm run build:server && node electron/launch.cjs",
+    "app": "npm run build:server && node electron/launch.cjs",
+    "dist:mac": "npm run build && npm run build:server && electron-builder --mac",
+    "dist:win": "npm run build && npm run build:server && electron-builder --win",
+    "dist": "npm run build && npm run build:server && electron-builder -mw",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.server.json --noEmit",
+    "build:server": "tsc -p tsconfig.server.json",
+    "lint": "npm run lint:docs && npm run lint:arch",
+    "lint:docs": "node scripts/lint-docs.ts",
+    "lint:arch": "node scripts/lint-arch.ts"
   },
   "build": {
     "appId": "com.wildside.agentic-dashboard",
@@ -30,7 +36,8 @@
     },
     "files": [
       "electron/**/*",
-      "server/**/*",
+      "dist-server/server/**/*",
+      "dist-server/shared/**/*",
       "public/**/*",
       "themes/**/*",
       "package.json"
@@ -64,8 +71,12 @@
     }
   },
   "devDependencies": {
+    "@types/node": "^26.1.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "electron": "^33.0.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "typescript": "^6.0.3"
   },
   "allowScripts": {
     "electron@33.4.11": true

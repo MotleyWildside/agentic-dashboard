@@ -1,0 +1,29 @@
+{
+  // Server/shared/tests config. Two jobs:
+  //  1. `npm run typecheck` — tsc -p tsconfig.server.json --noEmit
+  //  2. `npm run build:server` — emit plain ESM JS into dist-server/ for the
+  //     Electron shell and packaged builds (Electron's bundled Node cannot
+  //     type-strip .ts files; system Node ≥22.18 runs the .ts sources directly).
+  // erasableSyntaxOnly keeps the sources runnable by `node server/index.ts`
+  // (Node type stripping): no enums, no namespaces, no parameter properties.
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "outDir": "dist-server",
+    "rootDir": ".",
+    "sourceMap": false,
+    "declaration": false,
+    "types": ["node"]
+  },
+  "include": ["server", "shared", "scripts/scan.ts", "scripts/lint-docs.ts", "scripts/lint-arch.ts", "test"],
+  "exclude": ["test/fixtures"]
+}

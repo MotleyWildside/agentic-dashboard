@@ -22,9 +22,24 @@ if (!app.isPackaged) {
   process.chdir(path.join(__dirname, '..'));
 }
 
-let win = null;
+// The app sources are TypeScript, compiled to plain ESM JS in dist-server/ by
+// `npm run build:server` (Electron's bundled Node can't type-strip .ts files).
+// The npm scripts (`app`, `dist:*`) run that build before launching.
+function distPath(...segments) {
+  return pathToFileURL(path.join(__dirname, '..', 'dist-server', ...segments)).href;
+}
 
-const DEFAULT_THEME_ID = 'terminal-console';
+// Loaded from the compiled shared module in app.whenReady() before any IPC runs.
+let DEFAULT_THEME_ID = 'terminal-console';
+let validateThemePack = () => ['theme schema not loaded'];
+
+async function loadThemeSchema() {
+  const schema = await import(distPath('shared', 'theme-schema.js'));
+  DEFAULT_THEME_ID = schema.DEFAULT_THEME_ID;
+  validateThemePack = schema.validateThemePack;
+}
+
+let win = null;
 
 function themesDir() {
   return path.join(__dirname, '..', 'themes');
@@ -36,26 +51,6 @@ function themeStoreDir() {
 
 function themeSettingsFile() {
   return path.join(app.getPath('userData'), 'theme-settings.json');
-}
-
-function isHex(value) {
-  return typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value);
-}
-
-function validateThemePack(theme) {
-  const errors = [];
-  if (!theme || typeof theme !== 'object') errors.push('Theme must be a JSON object.');
-  if (!theme?.id || !/^[a-z0-9-]+$/.test(theme.id)) errors.push('id is required and must use lowercase letters, numbers, and hyphens.');
-  if (!theme?.name) errors.push('name is required.');
-  if (!['dark', 'light'].includes(theme?.mode)) errors.push('mode must be "dark" or "light".');
-  if (!isHex(theme?.palette?.background?.default)) errors.push('palette.background.default must be a hex color.');
-  if (!isHex(theme?.palette?.background?.paper)) errors.push('palette.background.paper must be a hex color.');
-  if (!isHex(theme?.palette?.text?.primary)) errors.push('palette.text.primary must be a hex color.');
-  if (!isHex(theme?.palette?.accent)) errors.push('palette.accent must be a hex color.');
-  for (const status of ['running', 'idle', 'waiting', 'attention', 'error']) {
-    if (!isHex(theme?.status?.[status])) errors.push(`status.${status} must be a hex color.`);
-  }
-  return errors;
 }
 
 async function readJson(file) {
@@ -172,15 +167,14 @@ async function startServer() {
   // Importing the server module boots the HTTP server + poll loop as a side
   // effect and hands back a promise that resolves with the bound URL. Use an
   // absolute file:// URL so ESM resolution works both in dev and from app.asar.
-  const serverUrl = pathToFileURL(path.join(__dirname, '..', 'server', 'index.js')).href;
-  const { ready } = await import(serverUrl);
+  const { ready } = await import(distPath('server', 'index.js'));
   try {
     return await ready;
   } catch (err) {
     // A dashboard instance is already serving this port (e.g. `npm start` in a
     // terminal). Don't fight it — just point the window at the running server.
     if (err && err.code === 'EADDRINUSE') {
-      const { config } = await import(pathToFileURL(path.join(__dirname, '..', 'server', 'config.js')).href);
+      const { config } = await import(distPath('server', 'config.js'));
       console.warn(`Port ${config.port} in use — attaching to the existing dashboard.`);
       return { host: config.host, port: config.port, url: `http://${config.host}:${config.port}` };
     }
@@ -227,6 +221,11 @@ app.on('second-instance', () => {
 });
 
 app.whenReady().then(async () => {
+  try {
+    await loadThemeSchema();
+  } catch (err) {
+    console.error('Failed to load theme schema from dist-server (run `npm run build:server`):', err);
+  }
   registerThemeIpc();
   let url;
   try {

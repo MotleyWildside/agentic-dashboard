@@ -1,10 +1,15 @@
 # Agent Plugins
 
-Agent Control discovers agents from `server/plugins/*.js`.
+> Quick reference. The full architecture wiki lives in
+> [knowledge-base/](knowledge-base/README.md) — see
+> [adding-an-agent-provider](knowledge-base/wiki/agents/adding-an-agent-provider.md)
+> for the complete recipe.
+
+Agent Control discovers agents from `server/plugins/*.ts`.
 
 To add a new agent:
 
-1. Copy `server/plugins/_template.js` to `server/plugins/<agent-id>.js`.
+1. Copy `server/plugins/_template.ts` to `server/plugins/<agent-id>.ts`.
 2. Export a default plugin with:
    - `id`: stable lowercase key, for settings and SSE events.
    - `name`: display name in the dashboard and Settings > Agents.
@@ -12,8 +17,10 @@ To add a new agent:
    - `logo`: optional inline SVG.
    - `layout`: optional widget sizing defaults/limits in grid units:
      `{ minW, minH, defaultW, defaultH, maxW, maxH }`.
-   - `collect(ctx)`: async collector returning an agent state.
-3. Add a collector in `server/collectors/<agent-id>.js`.
+   - `matchProcess(cmd)`: optional `ps` matcher for liveness detection.
+   - `collect(ctx)`: async collector returning an agent state
+     (`AgentState` in `shared/types.ts`).
+3. Add a collector in `server/collectors/<agent-id>.ts`.
 4. Restart the app.
 
 The plugin automatically appears in the dashboard edit-mode add-widget dialog.
