@@ -114,6 +114,13 @@ export interface Snapshot {
   updatedAt: string | null;
   agents: AgentState[];
   processes: Record<string, ProcessInfo> | null;
+  /**
+   * Per-plugin opaque payloads for custom widget types (widgetType !== 'agent-card').
+   * Keyed by pluginId; the value is whatever that plugin's collectData() returned.
+   * Core treats it as opaque — only the plugin's own renderer interprets it.
+   * Absent/null for dashboards with no custom widgets. See ADR-0006.
+   */
+  widgetData?: Record<string, unknown> | null;
 }
 
 export interface DashboardEvent {
@@ -160,6 +167,12 @@ export interface PluginMeta {
   icon: string;
   logo: string | null;
   layout: PluginLayout;
+  /**
+   * Which frontend renderer draws this plugin's widget. Defaults to
+   * 'agent-card' (the standard card). Custom values select an alternate
+   * component from the frontend widget registry (src/ui/widgets/). See ADR-0006.
+   */
+  widgetType: string;
 }
 
 export interface CollectContext {
@@ -168,8 +181,14 @@ export interface CollectContext {
 }
 
 /**
- * The agent plugin contract — see server/plugins/_template.ts for field docs
+ * The plugin contract — see server/plugins/_template.ts for field docs
  * and docs/knowledge-base/wiki/agents/agent-provider-contract.md.
+ *
+ * A plugin provides at least one data method:
+ *  - `collect` for the standard agent card (widgetType 'agent-card', the default);
+ *  - `collectData` for a custom widget type, returning a plugin-owned payload
+ *    surfaced under Snapshot.widgetData[id] and drawn by a custom renderer.
+ * The registry enforces that at least one is present. See ADR-0006.
  */
 export interface AgentPlugin {
   id: string;
@@ -178,7 +197,12 @@ export interface AgentPlugin {
   logo?: string;
   layout?: Partial<PluginLayout>;
   matchProcess?: (cmd: string) => boolean;
-  collect: (ctx: CollectContext) => Promise<AgentState>;
+  /** Frontend renderer key; omit for the standard agent card. */
+  widgetType?: string;
+  /** Standard agent-card data path. Required unless collectData is provided. */
+  collect?: (ctx: CollectContext) => Promise<AgentState>;
+  /** Custom-widget data path — opaque payload for this plugin's own renderer. */
+  collectData?: (ctx: CollectContext) => Promise<unknown>;
 }
 
 // --- Themes ---

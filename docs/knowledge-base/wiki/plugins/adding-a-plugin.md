@@ -1,7 +1,8 @@
 # Adding a Plugin
 
-The general recipe (for an agent integration — the only plugin kind today —
-see the fuller [[adding-an-agent-provider]] walkthrough).
+The general recipe (for an agent integration — the most common plugin kind —
+see the fuller [[adding-an-agent-provider]] walkthrough). For a plugin that
+renders as something other than the agent card, see *Custom widgets* below.
 
 1. **Copy the template**: `server/plugins/_template.ts` →
    `server/plugins/<id>.ts` (no leading underscore — underscored files are
@@ -26,6 +27,23 @@ see the fuller [[adding-an-agent-provider]] walkthrough).
 6. **Document**: add the plugin to [[module-map]]'s table and note anything
    unusual in [[agent-provider-contract]]. If you changed the contract itself,
    that's an ADR.
+
+## Custom widgets (non-agent renderers, ADR-0006)
+
+To render as something other than the agent card (a chart, a log stream, a
+liveness indicator):
+
+1. In the manifest, set `widgetType: '<key>'` and provide `collectData(ctx)`
+   instead of `collect` — it returns any JSON payload (opaque to the core).
+2. Add a renderer component and register it under `<key>` in
+   `src/ui/widgets/registry.tsx` (wrap non-agent widgets in `WidgetShell`).
+   Read your payload from the `data` prop; treat it defensively.
+3. `npm run build` — renderers ship in the committed bundle (no runtime load).
+4. Keep the invariants: never invent data, no network, and let a missing/`null`
+   payload render as an honest empty state.
+
+Worked example: `server/plugins/example-pulse.ts` +
+`server/collectors/example-pulse.ts` + `src/ui/widgets/PulseWidget.tsx`.
 
 ## Checklist for review
 

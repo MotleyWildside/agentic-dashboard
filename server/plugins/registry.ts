@@ -41,8 +41,9 @@ export async function loadPluginsFrom(dir: string): Promise<AgentPlugin[]> {
       continue;
     }
     const plugin = mod.default;
-    if (!plugin || !plugin.id || !plugin.name || typeof plugin.collect !== 'function') {
-      console.warn(`[plugins] ${file} is missing a valid default export (id/name/collect) — skipped`);
+    const hasData = typeof plugin?.collect === 'function' || typeof plugin?.collectData === 'function';
+    if (!plugin || !plugin.id || !plugin.name || !hasData) {
+      console.warn(`[plugins] ${file} is missing a valid default export (id/name + collect or collectData) — skipped`);
       continue;
     }
     if (seenIds.has(plugin.id)) {
@@ -60,11 +61,12 @@ export const plugins: AgentPlugin[] = await loadPluginsFrom(__dirname);
 const DEFAULT_LAYOUT = { minW: 2, minH: 2, defaultW: 6, defaultH: 5, maxW: 8, maxH: 40 };
 
 export function pluginMeta(): PluginMeta[] {
-  return plugins.map(({ id, name, icon, logo, layout }) => ({
+  return plugins.map(({ id, name, icon, logo, layout, widgetType }) => ({
     id,
     name,
     icon,
     logo: logo || null,
     layout: { ...DEFAULT_LAYOUT, ...(layout || {}) },
+    widgetType: widgetType || 'agent-card',
   }));
 }

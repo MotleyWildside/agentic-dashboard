@@ -23,13 +23,16 @@ the frontend, and (compiled) the Electron main process.
 | `server/lib/files.ts` | JSONL tail/head readers, `readJsonSync` with freshness, mtime helpers | node builtins |
 | `server/lib/store.ts` | Persisted user state under `~/.agent-dashboard/` (settings, dismissed), atomic writes, `isEnabled` | config, files |
 | `server/lib/dashboard.ts` | Pure validation/normalization of widget layouts for POST /api/settings | shared/types |
-| `server/plugins/registry.ts` | Scans its own dir for `*.ts`/`*.js` plugin files, validates the contract, exposes `plugins` + `pluginMeta()`; `loadPluginsFrom(dir)` for tests | shared/types |
+| `server/lib/collect.ts` | Pure `collectWidgetData(plugins, makeCtx)`: runs `collectData` with failure isolation → `snapshot.widgetData` (ADR-0006) | shared/types |
+| `server/plugins/registry.ts` | Scans its own dir for `*.ts`/`*.js` plugin files, validates the contract (id/name + collect or collectData), exposes `plugins` + `pluginMeta()`; `loadPluginsFrom(dir)` for tests | shared/types |
 | `server/plugins/claude.ts`, `codex.ts` | Plugin manifests: identity, logo, `matchProcess`, wire to collector | collectors |
-| `server/plugins/_template.ts` | Documented template for new agent plugins | — |
+| `server/plugins/example-pulse.ts` | Reference **custom-widget** plugin: `widgetType: 'pulse'` + `collectData`, not an agent (ADR-0006) | collectors |
+| `server/plugins/_template.ts` | Documented template for new plugins (agent card + custom widget) | — |
 | `server/collectors/claude.ts` | Parses Claude Code JSONL transcripts (+ statusline reporter overlay) into `AgentState` | config, lib/files, lib/state |
 | `server/collectors/codex.ts` | Parses Codex rollout logs into `AgentState` | config, lib/files, lib/state |
 | `server/collectors/processes.ts` | `ps` scan against plugins' `matchProcess` predicates | shared/types |
 | `server/collectors/manual.ts` | `~/.agent-dashboard/manual.json` overrides, labelled `manual` | config, lib/files |
+| `server/collectors/example-pulse.ts` | Reference custom-widget collector: dashboard poll-heartbeat payload | shared/types |
 
 Rule: **collectors never import the registry or index**; plugins import only
 their collector + shared types; `index.ts` is the only module allowed to wire
@@ -43,11 +46,12 @@ everything together.
 | `src/ui/App.tsx` | Composition root only: wires hooks into `TopBar`, `DashboardGrid`, dialogs |
 | `src/ui/TopBar.tsx` | Header: running count, clock, connection dot, edit/settings buttons |
 | `src/ui/types.ts` | UI-facing types: `ThemeState`, `PluginInfo`, `CardAgent` |
-| `src/ui/lib/` | Pure logic, no React (unit-tested): `format.ts` (fmtNum/fmtAgo/shortPath…), `status.ts` (statusLabel/statusColor), `sessions.ts` (buildSessionRows…) |
+| `src/ui/lib/` | Pure logic, no React (unit-tested): `format.ts` (fmtNum/fmtAgo/shortPath…), `status.ts` (statusLabel/statusColor), `sessions.ts` (buildSessionRows…), `density.ts` (cardDensity — card content density from widget size) |
 | `src/ui/components/` | Reusable presentational primitives: `StatusBadge`, `MetricChip`, `PromptLabel`, `ProgressBar`, `PluginLogo` |
 | `src/ui/hooks/` | Shared state hooks: `useSnapshot` (SSE), `useAgentConfig` (plugins+settings), `useCompact` (breakpoints) |
-| `src/ui/agent-card/` | The agent widget renderer: `AgentCard`, `TaskRow`, `AgentLimits`, `AgentIcon` |
-| `src/ui/dashboard/` | Widget grid feature: `layout.ts` (pure geometry, unit-tested), `useDashboard` (optimistic save cycle), `DashboardGrid`, `EditControls`, `AddWidgetDialog` |
+| `src/ui/agent-card/` | The default `agent-card` renderer: `AgentCard`, `TaskRow`, `AgentLimits`, `AgentIcon` |
+| `src/ui/widgets/` | Widget renderer registry (ADR-0006): `registry.tsx` (widgetType→component), `resolve.ts` (pure, unit-tested), `WidgetShell`, `WidgetErrorBoundary`, `AgentCardWidget`/`PulseWidget`/`UnknownWidget` |
+| `src/ui/dashboard/` | Widget grid feature: `layout.ts` (pure geometry, unit-tested), `useDashboard` (optimistic save cycle), `DashboardGrid` (renderer lookup + error boundary), `EditControls`, `AddWidgetDialog` |
 | `src/ui/settings/SettingsDialog.tsx` | Theme selection / import / export dialog |
 | `src/data/api.ts` | API client: `subscribeSnapshot` (fetch + SSE + connection state), `loadAgentConfig`, `saveDashboardSettings`; dev-only mock gating |
 | `src/data/mockAgents.ts` | Design-time mock snapshot (dev builds only) |

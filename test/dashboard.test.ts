@@ -7,8 +7,8 @@ import type { PluginMeta } from '../shared/types.ts';
 
 const LAYOUT = { minW: 2, minH: 2, defaultW: 6, defaultH: 5, maxW: 8, maxH: 40 };
 const META: PluginMeta[] = [
-  { id: 'claude', name: 'Claude', icon: 'c', logo: null, layout: LAYOUT },
-  { id: 'codex', name: 'Codex', icon: 'x', logo: null, layout: LAYOUT },
+  { id: 'claude', name: 'Claude', icon: 'c', logo: null, layout: LAYOUT, widgetType: 'agent-card' },
+  { id: 'codex', name: 'Codex', icon: 'x', logo: null, layout: LAYOUT, widgetType: 'agent-card' },
 ];
 
 function widget(overrides: Record<string, any> = {}) {

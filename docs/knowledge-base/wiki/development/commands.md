@@ -21,7 +21,7 @@ stripping). All commands from the repo root.
 | `npm run build` | Vite → `public/` (**committed**; run this after any `src/` change or `npm start`/Electron serve a stale UI) |
 | `npm run build:server` | `tsc -p tsconfig.server.json` → `dist-server/` (gitignored; needed by Electron) |
 | `npm run app` | `build:server` + launch the Electron shell |
-| `npm run dist:mac` / `dist:win` / `dist` | full build (frontend + server) + electron-builder → `dist-app/` (unsigned; see README for Gatekeeper/SmartScreen notes) |
+| `npm run dist:mac` / `dist:win` / `dist` | full build (frontend + server) + electron-builder → `dist-app/` using `build/icon.*` for app icons (unsigned; see README for Gatekeeper/SmartScreen notes) |
 
 ## Environment
 

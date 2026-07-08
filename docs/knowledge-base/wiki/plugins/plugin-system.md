@@ -23,9 +23,16 @@ interface AgentPlugin {
   logo?: string;                           // inline SVG (no remote assets)
   layout?: Partial<PluginLayout>;          // widget sizing defaults/limits (grid units)
   matchProcess?: (cmd: string) => boolean; // optional `ps` matcher
-  collect: (ctx: CollectContext) => Promise<AgentState>;
+  widgetType?: string;                     // renderer key; omit ⇒ 'agent-card' (ADR-0006)
+  collect?: (ctx: CollectContext) => Promise<AgentState>;      // agent-card data path
+  collectData?: (ctx: CollectContext) => Promise<unknown>;     // custom-widget opaque payload
 }
 ```
+
+A plugin provides **at least one** of `collect` / `collectData`. The common
+case (an agent integration) uses `collect`; a custom widget sets `widgetType`
+and provides `collectData` whose payload lands in `Snapshot.widgetData[id]` and
+is drawn by a frontend renderer ([[widget-system]], ADR-0006).
 
 Field-by-field docs live in `server/plugins/_template.ts` (kept in sync with
 the type). There is no separate manifest file or version field — the module
@@ -36,18 +43,22 @@ the type). There is no separate manifest file or version field — the module
 1. **Discovery** (`server/plugins/registry.ts`, at import time): every
    `*.ts`/`*.js` file in the directory except `registry.*`, `_`-prefixed files,
    and `.d.ts` is dynamically imported.
-2. **Validation**: missing/invalid default export (no `id`/`name`/`collect`) →
-   warn + skip. Duplicate `id` → warn + skip. Module throws on import → warn +
-   skip. **A broken plugin never prevents boot.**
+2. **Validation**: missing/invalid default export (no `id`/`name`, or neither
+   `collect` nor `collectData`) → warn + skip. Duplicate `id` → warn + skip.
+   Module throws on import → warn + skip. **A broken plugin never prevents boot.**
 3. **Enablement**: a plugin is *enabled* iff the user has ≥1 dashboard widget
    of it (`isEnabled` in `server/lib/store.ts`). Disabled plugins are not
    polled (their `matchProcess` still runs — process info is cheap and global).
-4. **Collection**: each poll, `collect(ctx)` runs for enabled plugins in
-   parallel. `ctx.isDismissed(sessionId)` filters user-hidden sessions.
+4. **Collection**: each poll, enabled plugins run in parallel — `collect(ctx)`
+   for agent-card plugins (result → `snapshot.agents`), `collectData(ctx)` for
+   custom-widget plugins (result → `snapshot.widgetData[id]`, via
+   `collectWidgetData` in `server/lib/collect.ts`). `ctx.isDismissed(sessionId)`
+   filters user-hidden sessions.
 5. **Failure isolation at runtime**: a rejected `collect()` becomes
    `errorAgentState(...)` — the agent card shows status `ERROR` with the
-   message; other agents are unaffected. A throwing `matchProcess` is treated
-   as no-match (`server/collectors/processes.ts`).
+   message; a rejected `collectData()` becomes a `null` payload (logged). Other
+   plugins are unaffected. A throwing `matchProcess` is treated as no-match
+   (`server/collectors/processes.ts`).
 
 ## What plugins can and cannot access
 
@@ -67,8 +78,10 @@ the type). There is no separate manifest file or version field — the module
   [[settings-and-persistence]]. There is no per-plugin settings schema yet —
   add one deliberately (ADR) if a plugin ever needs config beyond env vars.
 - The UI receives plugin *metadata* via `GET /api/config` → `pluginMeta()`
-  (id, name, icon, logo, layout — never the collect function) and plugin *data*
-  via the snapshot ([[data-flow]]).
+  (id, name, icon, logo, layout, widgetType — never the collect/collectData
+  functions) and plugin *data* via the snapshot: agent state in
+  `snapshot.agents`, custom-widget payloads in `snapshot.widgetData`
+  ([[data-flow]]).
 
 ## Related
 

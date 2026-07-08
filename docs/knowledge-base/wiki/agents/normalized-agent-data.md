@@ -53,8 +53,11 @@ made-up value.
 
 ## Snapshot
 
-`{ updatedAt, agents: AgentState[], processes: Record<pluginId, {running, pids}> | null }`
-— what `GET /api/status` returns and SSE broadcasts.
+`{ updatedAt, agents: AgentState[], processes: Record<pluginId, {running, pids}> | null, widgetData?: Record<pluginId, unknown> | null }`
+— what `GET /api/status` returns and SSE broadcasts. `widgetData` carries
+opaque payloads for custom widget types (`collectData` plugins, ADR-0006); it
+is `null` for pure agent-card dashboards. `agents` and `widgetData` are parallel
+channels — custom widgets never distort `AgentState`.
 
 ## How to safely change this
 

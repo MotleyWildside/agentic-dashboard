@@ -7,6 +7,7 @@ by how often you'll need them.
 |---|---|---|---|
 | 1 | **New agent integration** | Drop one plugin file in `server/plugins/` + a collector in `server/collectors/` | [[adding-an-agent-provider]] |
 | 2 | **New dashboard widget instance** | UI edit mode → Add widget (persisted, no code) | [[widget-system]] |
+| 2b | **New widget type (custom renderer)** | Plugin sets `widgetType` + `collectData`; register a component in `src/ui/widgets/registry.tsx` (compile-time, needs `npm run build`) | [[widget-system]], ADR-0006 |
 | 3 | **New theme** | New JSON file in `themes/` (built-in) or import via Settings (custom) | [[adding-a-theme]] |
 | 4 | **Process detection for an agent** | `matchProcess(cmd)` on the plugin | [[agent-provider-contract]] |
 | 5 | **Manual data overrides** | `~/.agent-dashboard/manual.json` (24 h TTL), labelled `manual` | `server/collectors/manual.ts` |
@@ -17,11 +18,11 @@ by how often you'll need them.
 
 ## What is NOT an extension point yet (do not pretend otherwise)
 
-- **Custom widget renderers per plugin.** Every widget renders the same
-  `AgentCard` component; a plugin can influence it only via metadata
-  (name/icon/logo/layout) and its normalized data. Shipping a plugin-specific
-  React component would require a frontend registry + rebuild. Tracked in
-  [[architectural-risks]].
+- **Runtime-loaded widget renderers.** Custom renderers now exist (row 2b,
+  ADR-0006), but they are **compile-time**: registered in
+  `src/ui/widgets/registry.tsx` and shipped in the committed bundle via
+  `npm run build`. There is no way to load a renderer at runtime — that would
+  break the committed-bundle + review-to-install model.
 - **Plugins from outside `server/plugins/`.** The registry scans only its own
   directory; there is no user-level plugin dir (`~/.agent-dashboard/plugins`)
   yet. Deliberate: plugins run with full server privileges, so installing them

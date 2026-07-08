@@ -15,6 +15,8 @@ export interface PluginInfo {
   icon?: string;
   logo?: string | null;
   layout?: Partial<PluginLayout>;
+  /** Frontend renderer key (ADR-0006); absent/'agent-card' → the standard card. */
+  widgetType?: string;
 }
 
 /** What AgentCard needs from an agent — a live AgentState from the snapshot,

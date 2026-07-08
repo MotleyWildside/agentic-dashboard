@@ -43,22 +43,43 @@ the plugin's limits. Nothing invalid can reach `settings.json`
   cycle), `DashboardGrid.tsx` (react-grid-layout wiring; breakpoints `lg/md`
   12 cols, `sm` 6, `xs/xxs` 1 — small screens get an auto-derived stacked
   layout).
-- Each widget renders `AgentCard` (`src/ui/agent-card/`) with: the agent's live `AgentState` from the
-  snapshot (or an honest `unknown` placeholder if the agent isn't in the
-  snapshot yet), the plugin's metadata, and its own size (cards adapt content
-  density to `w`/`h` — the `small`/`medium` variants).
+- Each widget renders the component chosen by its plugin's `widgetType` via the
+  frontend renderer registry (`src/ui/widgets/registry.tsx`, ADR-0006), wrapped
+  in a per-widget `WidgetErrorBoundary`. The default `'agent-card'` renders
+  `AgentCard` (`src/ui/agent-card/`) with: the agent's live `AgentState` from
+  the snapshot (or an honest `unknown` placeholder if the agent isn't in the
+  snapshot yet), the plugin's metadata, and its own size. Cards adapt content
+  density to `w`/`h` via `cardDensity` (`src/ui/lib/density.ts`, pure, tested
+  in `test/ui-density.test.ts`): `small` (w ≤ 3 or h ≤ 2) compacts the header
+  and shows as many **dense** session rows as the widget height fits (derived
+  from `GRID_ROW_PX`; 0 on truly tiny widgets), `medium` (h ≤ 4) keeps full
+  rows but compacts the limits footer. Custom widget types receive their
+  plugin's `snapshot.widgetData[pluginId]` payload instead of an agent.
 - Loading/empty/error states are data-driven: no snapshot yet → placeholder
   card with status UNKNOWN; collector failure → status ERROR (from
   `errorAgentState`); no sessions → "No recent sessions".
 - Widget enablement doubles as plugin enablement: **a plugin with zero widgets
   isn't polled** ([[plugin-system]]).
 
-## Known limitation (by design, for now)
+## Widget types & the renderer registry (ADR-0006)
 
-There is exactly **one widget type**: the agent card. `pluginId` selects the
-data source, not a renderer. Plugin-specific renderers would need a frontend
-component registry + build step — see [[architectural-risks]] and open an ADR
-before building it.
+A widget's renderer is chosen by its plugin's `widgetType`, resolved against the
+frontend registry in `src/ui/widgets/`:
+
+- `registry.tsx` — `widgetType → component` map. Built-in entries: `agent-card`
+  (default, an adapter over `AgentCard`), `pulse` (the reference custom widget),
+  and `unknown` (the fallback). Add a widget kind by registering its component
+  here — no core changes.
+- `resolve.ts` — pure `resolveWidgetType(type, registered)`: `undefined ⇒
+  'agent-card'`, unregistered ⇒ `'unknown'` (honest fallback, never blank).
+  Node-tested (`test/widget-resolve.test.ts`); JSX-free so `node --test` can
+  import it.
+- `WidgetShell.tsx` / `WidgetErrorBoundary.tsx` — shared card frame + remove
+  chrome for custom widgets, and the per-widget crash boundary.
+
+Because the frontend is a **committed, compile-time bundle**, a new renderer
+ships with `npm run build` — not a runtime drop-in. This is the review-to-
+install security boundary, not a limitation ([[plugin-system]], ADR-0006).
 
 ## How to safely change this
 

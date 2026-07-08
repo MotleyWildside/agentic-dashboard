@@ -12,7 +12,9 @@ import { errorAgentState } from '../server/lib/state.ts';
 const ctx = { isDismissed: () => false };
 const [collected, processes] = await Promise.all([
   Promise.all(
-    plugins.map((p) => p.collect(ctx).catch((err) => errorAgentState(p.id, p.name, p.icon, err)))
+    plugins
+      .filter((p) => typeof p.collect === 'function')
+      .map((p) => p.collect!(ctx).catch((err) => errorAgentState(p.id, p.name, p.icon, err)))
   ),
   collectProcesses(processMatchers(plugins)),
 ]);

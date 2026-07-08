@@ -12,7 +12,14 @@ semantics and the guarantees each side makes.
 | Identity | `id`, `name`, `icon`, `logo?` | `id` is a stable key used in settings, dismissals (`"<id>:<sessionId>"`), SSE events, and widget instances. Renaming an id orphans user settings — don't. |
 | Widget sizing | `layout?` | Merged over registry defaults `{ minW:2, minH:2, defaultW:6, defaultH:5, maxW:8, maxH:40 }`; the server clamps widget geometry to these on save. |
 | Liveness signal | `matchProcess?(cmd)` | Ran against every `ps` line each poll. Match ⇒ agent process alive ⇒ an `unknown` agent upgrades to `idle` ("installed, no fresh logs"). Throwing = no-match. |
-| Data | `collect(ctx)` | Async, called every poll **only while the plugin has ≥1 widget**. Returns a full `AgentState` ([[normalized-agent-data]]). |
+| Data (agent card) | `collect?(ctx)` | Async, called every poll **only while the plugin has ≥1 widget**. Returns a full `AgentState` ([[normalized-agent-data]]). |
+| Renderer selection | `widgetType?` | Frontend renderer key; omit ⇒ `'agent-card'` (the standard card). Custom values select an alternate component from `src/ui/widgets/` (ADR-0006). |
+| Data (custom widget) | `collectData?(ctx)` | Async, called every poll instead of `collect`. Returns a plugin-owned **opaque** payload surfaced under `Snapshot.widgetData[id]` and drawn only by this plugin's renderer. |
+
+A plugin provides **at least one** of `collect` / `collectData` (the registry
+enforces this). Agent integrations use `collect`; non-agent widgets use
+`widgetType` + `collectData` — see the `example-pulse` reference plugin and
+ADR-0006.
 
 Through `AgentState`, a provider reports: status, active sessions (with
 sub-agent threads), repositories/cwd, model + effort metadata, token/context
@@ -23,7 +30,10 @@ per-field provenance map (`sources`).
 ## What the core guarantees the provider
 
 - **Isolation**: if `collect()` rejects, the core substitutes
-  `errorAgentState` — the failure is visible on the card, not fatal.
+  `errorAgentState` — the failure is visible on the card, not fatal. A
+  rejected `collectData()` becomes a `null` payload (logged), and a renderer
+  that throws is caught by a per-widget error boundary — one widget's failure
+  never blanks the dashboard.
 - **No double-polling**: the poll loop never overlaps itself; a slow collector
   delays the next tick rather than stacking.
 - **Post-processing**: the core prunes stale idle sessions

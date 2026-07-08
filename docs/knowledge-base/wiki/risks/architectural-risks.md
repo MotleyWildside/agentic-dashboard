@@ -3,13 +3,17 @@
 Known sharp edges, honestly stated. When you fix one, move it to the relevant
 page + ADR and delete it here.
 
-## 1. Single widget renderer (medium, most likely to bite next)
+## 1. Custom widgets are compile-time only (low, accepted — was: single renderer)
 
-All widgets render `AgentCard`; a plugin cannot ship a custom renderer or a
-non-agent widget (e.g. a rate-limit summary across agents). The frontend is a
-static bundle, so a real widget-type registry implies either bundling all
-renderers or a frontend build per plugin set. Don't ad-hoc this — ADR first.
-See [[widget-system]].
+Resolved for the common case by the widget renderer registry (ADR-0006):
+plugins can ship a custom `widgetType` + `collectData` and a component in
+`src/ui/widgets/registry.tsx`. The residual constraint: renderers are bundled at
+**build time** (committed `public/`), so a new one needs a rebuild + PR — there
+is no runtime renderer loading, deliberately (review-to-install, risk #8). A
+second residual: `widgetData` payloads are untyped, so a custom renderer *could*
+smuggle invented data past the `AgentState` provenance discipline — kept honest
+by the renderer contract + a required fixture test, not by types. See
+[[widget-system]].
 
 ## 2. Two unsynchronized theme stores (low)
 

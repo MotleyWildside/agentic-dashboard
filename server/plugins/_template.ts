@@ -24,6 +24,17 @@
 //              session from the dashboard; filter it out of `sessions`
 //              before computing agent-level aggregates.
 //
+// Custom widget types (ADR-0006) — for a plugin that is NOT an agent card:
+//   widgetType  — key of the frontend renderer that draws this plugin
+//                 (registered in src/ui/widgets/registry.tsx). Omit for the
+//                 standard agent card ('agent-card', the default).
+//   collectData — async (ctx) => any, called every poll INSTEAD of collect().
+//                 Return a plugin-owned payload; it lands under
+//                 Snapshot.widgetData[id] and only your renderer reads it.
+//                 Core treats it as opaque. Still: never invent data (label
+//                 provenance in the payload if it carries facts), no network.
+//                 A plugin provides collect OR collectData (see example-pulse.ts).
+//
 // Optional per-session field:
 //   session.pendingInput = { tool: 'AskUserQuestion', questions: [...] }
 //   Set session.status = 'needs_input' when the agent is blocked waiting on

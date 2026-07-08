@@ -9,9 +9,9 @@ import { effortLabel, sessionLabel } from '../lib/sessions.ts';
 import { statusColor } from '../lib/status.ts';
 import type { AgentSession } from '../../../shared/types.ts';
 
-export function TaskRow({ session, active, depth = 0 }: { session: AgentSession; active: boolean; depth?: number }) {
+export function TaskRow({ session, active, depth = 0, dense = false }: { session: AgentSession; active: boolean; depth?: number; dense?: boolean }) {
   const theme = useTheme();
-  const compact = useCompact();
+  const compact = useCompact() || dense;
   const color = active ? statusColor(theme, session.status) : theme.dashboard.status.idle;
   const effort = effortLabel(session.effort);
   const isChild = depth > 0;
@@ -69,7 +69,7 @@ export function TaskRow({ session, active, depth = 0 }: { session: AgentSession;
             {isChild ? '└' : '>'}
           </Typography>
           <Box sx={{ minWidth: 0, display: 'grid', gap: 0.25 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: isChild ? 15 : undefined, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: dense ? 13 : isChild ? 15 : undefined, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
               {sessionLabel(session)}
             </Typography>
             {!isChild && (
@@ -104,9 +104,11 @@ export function TaskRow({ session, active, depth = 0 }: { session: AgentSession;
         </Stack>
         <Stack direction="row" spacing={1.25} alignItems="center" sx={{ pt: 0.1 }}>
           <StatusBadge status={session.status} />
-          <Typography sx={{ color: 'text.disabled', fontFamily: theme.dashboard.fontMono, fontSize: 12, whiteSpace: 'nowrap' }}>
-            {fmtAgo(session.lastActivityAt)}
-          </Typography>
+          {!dense && (
+            <Typography sx={{ color: 'text.disabled', fontFamily: theme.dashboard.fontMono, fontSize: 12, whiteSpace: 'nowrap' }}>
+              {fmtAgo(session.lastActivityAt)}
+            </Typography>
+          )}
         </Stack>
       </Box>
 

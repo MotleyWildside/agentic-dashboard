@@ -30,6 +30,7 @@
   "build": {
     "appId": "com.wildside.agentic-dashboard",
     "productName": "Agentic Dashboard",
+    "icon": "build/icon",
     "asar": true,
     "directories": {
       "output": "dist-app"

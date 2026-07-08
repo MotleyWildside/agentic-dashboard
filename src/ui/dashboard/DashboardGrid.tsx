@@ -3,9 +3,10 @@ import { Alert, Box, Button, Typography, alpha, useTheme } from '@mui/material';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import type { Layout, LayoutItem } from 'react-grid-layout/legacy';
-import { AgentCard } from '../agent-card/AgentCard.tsx';
+import { getWidgetRenderer } from '../widgets/registry.tsx';
+import { WidgetErrorBoundary } from '../widgets/WidgetErrorBoundary.tsx';
 import { useCompact } from '../hooks/useCompact.ts';
-import { GRID_BREAKPOINTS, GRID_COLS } from './layout.ts';
+import { GRID_BREAKPOINTS, GRID_COLS, GRID_ROW_PX } from './layout.ts';
 import type { AgentState, WidgetInstance } from '../../../shared/types.ts';
 import type { CardAgent, PluginInfo } from '../types.ts';
 
@@ -16,6 +17,8 @@ export interface DashboardGridProps {
   layouts: Record<string, LayoutItem[]>;
   pluginsById: Map<string, PluginInfo>;
   agentsById: Map<string, AgentState>;
+  /** Per-plugin custom-widget payloads (Snapshot.widgetData); opaque to core. */
+  widgetData: Record<string, unknown> | null;
   editMode: boolean;
   canEditLayout: boolean;
   layoutError: string;
@@ -32,6 +35,7 @@ export function DashboardGrid({
   layouts,
   pluginsById,
   agentsById,
+  widgetData,
   editMode,
   canEditLayout,
   layoutError,
@@ -132,7 +136,7 @@ export function DashboardGrid({
           layouts={layouts}
           breakpoints={GRID_BREAKPOINTS}
           cols={GRID_COLS}
-          rowHeight={68}
+          rowHeight={GRID_ROW_PX}
           margin={[compact ? 8 : 14, compact ? 8 : 14]}
           containerPadding={[0, 0]}
           compactType={null}
@@ -149,15 +153,20 @@ export function DashboardGrid({
         >
           {widgets.map((widget) => {
             const plugin = pluginsById.get(widget.pluginId);
+            const Renderer = getWidgetRenderer(plugin?.widgetType);
+            const onRemove = () => onRemoveWidget(widget.widgetId);
             return (
               <Box key={widget.widgetId} sx={{ minWidth: 0, minHeight: 0 }}>
-                <AgentCard
-                  agent={agentForWidget(widget)}
-                  plugin={plugin}
-                  widgetSize={widget}
-                  editMode={editMode}
-                  onRemove={() => onRemoveWidget(widget.widgetId)}
-                />
+                <WidgetErrorBoundary title={plugin?.name || widget.pluginId} editMode={editMode} onRemove={onRemove}>
+                  <Renderer
+                    agent={agentForWidget(widget)}
+                    plugin={plugin}
+                    data={widgetData?.[widget.pluginId]}
+                    widgetSize={widget}
+                    editMode={editMode}
+                    onRemove={onRemove}
+                  />
+                </WidgetErrorBoundary>
               </Box>
             );
           })}

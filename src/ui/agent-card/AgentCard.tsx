@@ -5,6 +5,7 @@ import { MetricChip } from '../components/MetricChip.tsx';
 import { PromptLabel } from '../components/PromptLabel.tsx';
 import { StatusBadge } from '../components/StatusBadge.tsx';
 import { useCompact } from '../hooks/useCompact.ts';
+import { cardDensity } from '../lib/density.ts';
 import { buildSessionRows, isActiveSession, sessionKey } from '../lib/sessions.ts';
 import { statusColor } from '../lib/status.ts';
 import { AgentIcon } from './AgentIcon.tsx';
@@ -29,9 +30,7 @@ export function AgentCard({ agent, plugin, widgetSize, editMode = false, onRemov
   const waiting = sessions.filter((session) => ['needs_input', 'waiting_approval', 'blocked'].includes(session.status)).length;
   const color = statusColor(theme, agent.status);
   const size = widgetSize || { w: 6, h: 5 };
-  const small = size.w <= 3 || size.h <= 2;
-  const medium = !small && size.h <= 4;
-  const visibleSessionCount = small ? 0 : sessionRows.length;
+  const { small, medium, visibleSessionCount } = cardDensity(size, sessionRows.length);
   const metrics: Array<[string, React.ReactNode, boolean]> = [
     ['active', activeSessions.length || (agent.status === 'running' ? 1 : 0), false],
     [compact || small ? 'wait' : 'waiting', waiting, waiting > 0],
@@ -104,24 +103,22 @@ export function AgentCard({ agent, plugin, widgetSize, editMode = false, onRemov
         </Box>
       </Box>
 
-      {small && <AgentLimits agent={agent} compactView />}
-
-      {!small && (
-      <Box sx={{ display: 'grid', gap: compact ? 0.65 : 1, mt: 0.25, minHeight: 0, overflow: 'auto', pr: 0.25 }}>
-        <PromptLabel>{agent.status === 'running' ? 'task.current' : 'task.recent'}</PromptLabel>
+      {(!small || visibleSessionCount > 0) && (
+      <Box sx={{ display: 'grid', gap: small ? 0.6 : compact ? 0.65 : 1, mt: 0.25, minHeight: 0, overflow: 'auto', pr: 0.25 }}>
+        {!small && <PromptLabel>{agent.status === 'running' ? 'task.current' : 'task.recent'}</PromptLabel>}
         {sessionRows.length ? (
           sessionRows.slice(0, visibleSessionCount).map(({ session, depth }) => (
-            <TaskRow key={sessionKey(session)} session={session} active={isActiveSession(session)} depth={depth} />
+            <TaskRow key={sessionKey(session)} session={session} active={isActiveSession(session)} depth={depth} dense={small} />
           ))
-        ) : (
+        ) : !small ? (
           <Box sx={{ p: 2, border: `1px dashed ${theme.dashboard.palette.border}`, borderRadius: `${theme.dashboard.radius.md}px` }}>
             <Typography color="text.secondary">No recent sessions</Typography>
           </Box>
-        )}
+        ) : null}
       </Box>
       )}
 
-      {!small && <Box sx={{ mt: 'auto', minHeight: 0, overflow: 'hidden' }}><AgentLimits agent={agent} compactView={medium} /></Box>}
+      <Box sx={{ mt: 'auto', minHeight: 0, overflow: 'hidden' }}><AgentLimits agent={agent} compactView={small || medium} /></Box>
     </Box>
   );
 }

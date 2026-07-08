@@ -8,6 +8,8 @@ import type { PluginInfo } from '../types.ts';
 
 export const GRID_COLS = { lg: 12, md: 12, sm: 6, xs: 1, xxs: 1 };
 export const GRID_BREAKPOINTS = { lg: 1200, md: 900, sm: 640, xs: 360, xxs: 0 };
+/** Pixel height of one grid row (react-grid-layout `rowHeight`). */
+export const GRID_ROW_PX = 68;
 export const DEFAULT_WIDGET_LAYOUT: PluginLayout = { minW: 2, minH: 2, defaultW: 6, defaultH: 5, maxW: 8, maxH: 40 };
 
 export function clampNumber(value: number, min: number, max: number): number {

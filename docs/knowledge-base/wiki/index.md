@@ -43,6 +43,7 @@ The maintained knowledge base for Agentic Dashboard. Rules for editing:
 - [ADR-0003](decisions/ADR-0003-plugin-process-matchers-and-testability.md) — plugin process matchers + testability extraction
 - [ADR-0004](decisions/ADR-0004-typescript-migration.md) — TypeScript migration & dual execution model
 - [ADR-0005](decisions/ADR-0005-guardrail-linters.md) — guardrail linters for docs and architecture
+- [ADR-0006](decisions/ADR-0006-plugin-widget-renderers.md) — plugin-defined widget renderers (custom widget types)
 
 ## Meta
 - [[architectural-risks]] — [risks/architectural-risks.md](risks/architectural-risks.md): known sharp edges, honestly stated

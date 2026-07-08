@@ -88,6 +88,7 @@ export default function App({ themeApi, themeState, refreshThemes }: AppProps) {
           layouts={dashboard.layouts}
           pluginsById={dashboard.pluginsById}
           agentsById={agentsById}
+          widgetData={snapshot.widgetData ?? null}
           editMode={editMode}
           canEditLayout={canEditLayout}
           layoutError={dashboard.layoutError}

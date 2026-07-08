@@ -9,6 +9,7 @@ import { collectProcesses, processMatchers } from './collectors/processes.ts';
 import { applyManualOverrides } from './collectors/manual.ts';
 import { plugins, pluginMeta } from './plugins/registry.ts';
 import { errorAgentState, pruneInactiveSessions } from './lib/state.ts';
+import { collectWidgetData } from './lib/collect.ts';
 import { validateDashboard, normalizeDashboard } from './lib/dashboard.ts';
 import {
   loadSettings, saveSettings, isEnabled,
@@ -39,7 +40,7 @@ const MIME: Record<string, string> = {
 };
 
 // --- State ---
-let snapshot: Snapshot = { updatedAt: null, agents: [], processes: null };
+let snapshot: Snapshot = { updatedAt: null, agents: [], processes: null, widgetData: null };
 const events: DashboardEvent[] = []; // ring buffer of dashboard events (status changes etc.)
 const MAX_EVENTS = 100;
 const sseClients = new Set<ServerResponse>();
@@ -67,15 +68,20 @@ async function poll(): Promise<void> {
   polling = true;
   try {
     const enabledPlugins = plugins.filter((p) => isEnabled(settings, p.id));
-    const [collected, processes] = await Promise.all([
+    const makeCtx = (id: string) => ({
+      isDismissed: (sid: string | null | undefined) => sid != null && dismissedSet.has(`${id}:${sid}`),
+    });
+    const agentPlugins = enabledPlugins.filter((p) => typeof p.collect === 'function');
+    const [collected, processes, widgetData] = await Promise.all([
       Promise.all(
-        enabledPlugins.map((p) =>
+        agentPlugins.map((p) =>
           p
-            .collect({ isDismissed: (sid) => sid != null && dismissedSet.has(`${p.id}:${sid}`) })
+            .collect!(makeCtx(p.id))
             .catch((err) => errorAgentState(p.id, p.name, p.icon, err))
         )
       ),
       collectProcesses(processMatchers(plugins)).catch(() => null),
+      collectWidgetData(enabledPlugins, makeCtx),
     ]);
 
     // Process signal upgrades "unknown" to "idle" when a process is alive.
@@ -113,7 +119,7 @@ async function poll(): Promise<void> {
       }
     }
 
-    snapshot = { updatedAt: new Date().toISOString(), agents, processes };
+    snapshot = { updatedAt: new Date().toISOString(), agents, processes, widgetData };
     broadcast('snapshot', snapshot);
   } finally {
     polling = false;
