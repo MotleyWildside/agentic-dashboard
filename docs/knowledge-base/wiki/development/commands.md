@@ -20,14 +20,15 @@ stripping). All commands from the repo root.
 |---|---|
 | `npm run build` | Vite → `public/` (**committed**; run this after any `src/` change or `npm start`/Electron serve a stale UI) |
 | `npm run build:server` | `tsc -p tsconfig.server.json` → `dist-server/` (gitignored; needed by Electron) |
-| `npm run app` | `build:server` + launch the Electron shell |
+| `npm run app` | `build:server` + launch the Electron shell (dev launch uses the configured/default port; packaged Electron asks the OS for a free loopback port) |
 | `npm run dist:mac` / `dist:win` / `dist` | full build (frontend + server) + electron-builder → `dist-app/` using `build/icon.*` for app icons (unsigned; see README for Gatekeeper/SmartScreen notes) |
 
 ## Environment
 
 Copy `.env.example` → `.env` for local overrides (`PORT`, `POLL_MS`, log
 directories…). The `dev` script pins `PORT=8765` for the proxy; plain
-`npm start` uses `.env`/default 4321.
+`npm start` uses `.env`/default 4321; packaged Electron sets `PORT=0` unless
+overridden.
 
 ## Gotchas
 

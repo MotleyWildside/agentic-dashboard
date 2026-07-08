@@ -20,7 +20,7 @@ interface AgentPlugin {
   id: string;                              // unique, url-safe; used in settings, SSE, dismissals
   name: string;                            // display name
   icon: string;                            // glyph fallback
-  logo?: string;                           // inline SVG or /plugin-assets/... image URL; no remote assets
+  logo?: string;                           // inline SVG, data URL, or /plugin-assets/... image URL; no remote assets
   layout?: Partial<PluginLayout>;          // widget sizing defaults/limits (grid units)
   matchProcess?: (cmd: string) => boolean; // optional `ps` matcher
   widgetType?: string;                     // renderer key; omit ⇒ 'agent-card' (ADR-0006)

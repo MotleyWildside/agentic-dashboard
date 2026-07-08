@@ -35,7 +35,9 @@ Consequences baked into the code:
 
 ## Server ⇄ frontend boundary
 
-The only interface is the HTTP API on `127.0.0.1:<PORT>` (default 4321):
+The only interface is the HTTP API on `127.0.0.1:<PORT>` (default 4321 for
+`npm start`; packaged Electron sets `PORT=0` and uses the OS-assigned free
+loopback port):
 
 | Endpoint | Purpose |
 |---|---|
@@ -59,9 +61,10 @@ In dev, Vite (`:5173`) proxies `/api` to the server on `:8765`
   extra capability is the `ThemeApi` bridged by `preload.cjs`.
 - Electron main additionally owns theme file persistence (userData) — see
   [[theme-system]].
-- If the port is already served (a terminal `npm start`), the shell attaches
-  to the running server instead of failing (`EADDRINUSE` handling in
-  `startServer()`).
+- If the configured port is already served (common in dev, e.g. a terminal
+  `npm start`), the shell attaches to the running server instead of failing
+  (`EADDRINUSE` handling in `startServer()`). Packaged Electron avoids this
+  path by requesting an OS-assigned free port unless `PORT` is explicitly set.
 
 ## How to safely change this
 

@@ -25,9 +25,15 @@ function loadDotEnv(): void {
 
 loadDotEnv();
 
+function portFromEnv(value: string | undefined): number {
+  if (value === undefined || value === '') return 4321;
+  const port = Number(value);
+  return Number.isInteger(port) && port >= 0 && port <= 65535 ? port : 4321;
+}
+
 export const config = {
   host: process.env.HOST || '127.0.0.1',
-  port: Number(process.env.PORT) || 4321,
+  port: portFromEnv(process.env.PORT),
   pollMs: Math.max(1000, Number(process.env.POLL_MS) || 2000),
   claudeProjectsDir: expandHome(process.env.CLAUDE_PROJECTS_DIR || '~/.claude/projects'),
   codexSessionsDir: expandHome(process.env.CODEX_SESSIONS_DIR || '~/.codex/sessions'),

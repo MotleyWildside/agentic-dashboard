@@ -56,11 +56,10 @@ test('pluginMeta exposes layout defaults, widgetType, and no collector internals
 
 test('claude and codex logo metadata points at bundled local assets', () => {
   const byId = Object.fromEntries(pluginMeta().map((m) => [m.id, m]));
-  for (const id of ['claude', 'codex'] as const) {
-    assert.match(byId[id].logo || '', /^\/plugin-assets\/logos\/.+\.(webp|png)$/);
-    const rel = byId[id].logo!.replace('/plugin-assets/', '');
-    assert.equal(fs.existsSync(path.join(REPO_ROOT, 'server', 'plugin-assets', rel)), true, `${id} logo asset exists`);
-  }
+  assert.match(byId.claude.logo || '', /^data:image\/webp;base64,/);
+  assert.match(byId.codex.logo || '', /^data:image\/png;base64,/);
+  assert.equal(fs.existsSync(path.join(REPO_ROOT, 'server', 'plugin-assets', 'logos', 'claude.webp')), true);
+  assert.equal(fs.existsSync(path.join(REPO_ROOT, 'server', 'plugin-assets', 'logos', 'codex.png')), true);
 });
 
 test('process matchers match their own CLIs and not each other', () => {

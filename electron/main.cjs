@@ -20,6 +20,10 @@ if (!gotLock) {
 // into) — so skip it and rely on defaults / real environment variables.
 if (!app.isPackaged) {
   process.chdir(path.join(__dirname, '..'));
+} else if (!process.env.PORT) {
+  // Packaged apps should not compete for a well-known dev port. Let the OS
+  // assign a free loopback port, then load the BrowserWindow from server.ready.
+  process.env.PORT = '0';
 }
 
 // The app sources are TypeScript, compiled to plain ESM JS in dist-server/ by

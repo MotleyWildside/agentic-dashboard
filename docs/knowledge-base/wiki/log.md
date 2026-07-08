@@ -2,6 +2,15 @@
 
 Newest first. One line per meaningful wiki change: date · pages · what/why.
 
+- **2026-07-08** · `runtime-boundaries.md`, `development/commands.md` ·
+  Packaged Electron now sets `PORT=0`, letting the OS assign a free loopback
+  port and avoiding collisions/accidental attachment to old dashboard servers.
+
+- **2026-07-08** · `agents/agent-provider-contract.md`,
+  `plugins/plugin-system.md`, `plugins/adding-a-plugin.md` · Bundled Claude and
+  Codex logos now surface as data URLs in plugin metadata so packaged Electron
+  builds do not depend on a separate static asset request.
+
 - **2026-07-08** · `log.md` · Codex uses the new bundled color PNG logo, and
   image-backed agent logos render without the extra card-icon border.
 

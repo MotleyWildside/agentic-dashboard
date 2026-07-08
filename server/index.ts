@@ -57,6 +57,7 @@ let snapshot: Snapshot = { updatedAt: null, agents: [], processes: null, widgetD
 const events: DashboardEvent[] = []; // ring buffer of dashboard events (status changes etc.)
 const MAX_EVENTS = 100;
 const sseClients = new Set<ServerResponse>();
+let boundPort = config.port;
 
 let settings = loadSettings();
 let dismissed = loadDismissed(); // "<agentId>:<sessionId>" -> ISO date dismissed
@@ -169,7 +170,7 @@ function json(res: ServerResponse, code: number, body: unknown): void {
   res.writeHead(code, {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-store',
-    'Access-Control-Allow-Origin': 'http://localhost:' + config.port,
+    'Access-Control-Allow-Origin': 'http://localhost:' + boundPort,
   });
   res.end(text);
 }
@@ -339,7 +340,7 @@ function shutdown(signal?: string): void {
   server.close(() => process.exit(0));
   // Backstop: if something still lingers, don't hang the terminal.
   setTimeout(() => process.exit(0), 800).unref();
-  if (signal) console.log(`\n${signal} → shutting down, port ${config.port} released.`);
+  if (signal) console.log(`\n${signal} → shutting down, port ${boundPort} released.`);
 }
 for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => shutdown(sig));
 
@@ -365,14 +366,21 @@ export interface ServerInfo {
   url: string;
 }
 
+function serverPort(): number {
+  const address = server.address();
+  if (address && typeof address === 'object') return address.port;
+  return config.port;
+}
+
 // Resolves once the HTTP server is accepting connections. Consumers (e.g. the
 // Electron shell) await this before pointing a window at the dashboard.
 export const ready: Promise<ServerInfo> = new Promise((resolve, reject) => {
   let retried = false;
   function onListening(): void {
-    console.log(`Mimiron → http://${config.host}:${config.port}`);
+    boundPort = serverPort();
+    console.log(`Mimiron → http://${config.host}:${boundPort}`);
     console.log(`Polling every ${config.pollMs}ms | Claude: ${config.claudeProjectsDir} | Codex: ${config.codexSessionsDir}`);
-    resolve({ host: config.host, port: config.port, url: `http://${config.host}:${config.port}` });
+    resolve({ host: config.host, port: boundPort, url: `http://${config.host}:${boundPort}` });
   }
   function onError(err: NodeJS.ErrnoException): void {
     // If the port is taken and we're allowed to free it, kill the holder and

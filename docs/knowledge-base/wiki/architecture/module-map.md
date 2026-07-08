@@ -24,6 +24,7 @@ the frontend, and (compiled) the Electron main process.
 | `server/lib/store.ts` | Persisted user state under `~/.agent-dashboard/` (settings, dismissed), atomic writes, `isEnabled` | config, files |
 | `server/lib/dashboard.ts` | Pure validation/normalization of widget layouts for POST /api/settings | shared/types |
 | `server/lib/collect.ts` | Pure `collectWidgetData(plugins, makeCtx)`: runs `collectData` with failure isolation → `snapshot.widgetData` (ADR-0006) | shared/types |
+| `server/lib/assets.ts` | Bundled asset helpers (e.g. plugin logo files → data URLs) that work from TS sources, compiled `dist-server/`, and packaged Electron `app.asar` | node builtins |
 | `server/plugins/registry.ts` | Scans its own dir for `*.ts`/`*.js` plugin files, validates the contract (id/name + collect or collectData), exposes `plugins` + `pluginMeta()`; `loadPluginsFrom(dir)` for tests | shared/types |
 | `server/plugins/claude.ts`, `codex.ts` | Plugin manifests: identity, logo, `matchProcess`, wire to collector | collectors |
 | `server/plugins/example-pulse.ts` | Reference **custom-widget** plugin: `widgetType: 'pulse'` + `collectData`, not an agent (ADR-0006) | collectors |
